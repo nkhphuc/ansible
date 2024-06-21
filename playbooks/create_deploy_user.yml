@@ -2,6 +2,11 @@
 - name: Create a deploy user
   hosts: dev_web_servers
   become: yes
+  vars:
+    ssh_keys:
+      - /Users/hopee/.ssh/hopee_mac_github_1.pub
+      # - /path/to/additional/key1.pub
+      # - /path/to/additional/key2.pub
   tasks:
     - name: Ensure the deploy user exists
       ansible.builtin.user:
@@ -17,13 +22,11 @@
         group: deploy_user
         mode: '0700'
 
-    - name: Copy authorized keys
-      ansible.builtin.copy:
-        src: /Users/hopee/.ssh/hopee_mac_github_1.pub
-        dest: /home/deploy_user/.ssh/authorized_keys
-        owner: deploy_user
-        group: deploy_user
-        mode: '0600'
+    - name: Add authorized keys
+      ansible.builtin.authorized_key:
+        user: deploy_user
+        key: "{{ lookup('file', item) }}"
+      with_items: "{{ ssh_keys }}"
 
     - name: Add deploy_user to sudoers
       ansible.builtin.lineinfile:
