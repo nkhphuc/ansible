@@ -1,3 +1,7 @@
 # Ansible cmd demo
 
-ansible-playbook -i inventory/dev playbooks/site.yml
+<!-- Check dev inventory -->
+ansible-inventory --list -i inventory/dev
+
+<!-- Run playbook -->
+ansible-playbook -i inventory/dev playbooks/dev_web_servers.yml
