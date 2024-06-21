@@ -1,7 +1,5 @@
-dev_webs:
-  hosts:
-    rails_dev_server_1_pu:
+[pro_webs]
+rails_pro_server_1_pu
 
-dev_network:
-  children:
-    dev_webs:
+[pro_network:children]
+pro_webs

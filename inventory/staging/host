@@ -1,7 +1,5 @@
-dev_webs:
-  hosts:
-    rails_dev_server_1_pu:
+[stg_webs]
+rails_stg_server_1_pu
 
-dev_network:
-  children:
-    dev_webs:
+[stg_network:children]
+stg_webs
