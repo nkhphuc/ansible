@@ -1,0 +1,7 @@
+dev_webs:
+  hosts:
+    rails_dev_server_1_pu:
+
+dev_network:
+  children:
+    dev_webs:
