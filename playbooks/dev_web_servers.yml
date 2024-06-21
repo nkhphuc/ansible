@@ -1,10 +1,28 @@
 ---
-- name: My first play
+- name: Playbook to switch between ec2_user and deploy_user
   hosts: dev_web_servers
   tasks:
-   - name: Ping my hosts
-     ansible.builtin.ping:
+    - name: Ping my hosts
+      ansible.builtin.ping:
 
-   - name: Print message
-     ansible.builtin.debug:
-      msg: Hello world
+    - name: Print message
+      ansible.builtin.debug:
+        msg: Hello world
+
+    - name: Task as ec2_user
+      ansible.builtin.command:
+        cmd: echo "This is ec2_user"
+
+    - name: Task as deploy_user
+      ansible.builtin.command:
+        cmd: echo "This is deploy_user"
+      become: yes
+      become_user: "{{ deploy_user }}"
+      vars:
+        ansible_ssh_private_key_file: "{{ deploy_user_key }}"
+
+    - name: Task that requires super user privileges
+      ansible.builtin.command:
+        cmd: echo "This is root"
+      become: yes
+      become_user: root
