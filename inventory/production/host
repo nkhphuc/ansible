@@ -1,5 +1,5 @@
-[pro_webs]
+[pro_web_servers]
 rails_pro_server_1_pu
 
 [pro_network:children]
-pro_webs
+pro_web_servers
