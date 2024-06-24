@@ -4,7 +4,7 @@
 ansible-inventory --list -i inventory/dev
 
 <!-- Run playbook -->
-<!-- Create deploy user -->
+<!-- Create deploy user and add SSH keys -->
 ansible-playbook -i inventory/dev playbooks/create_deploy_user.yml
 
 <!-- Test by ping and print messages -->
