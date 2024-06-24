@@ -1,0 +1,5 @@
+---
+ssh_keys:
+  - /Users/hopee/.ssh/hopee_mac_github_1.pub
+  # - /path/to/additional/key1.pub
+  # - /path/to/additional/key2.pub

@@ -1,0 +1,27 @@
+---
+- name: Ensure the deploy user exists
+  ansible.builtin.user:
+    name: deploy_user
+    state: present
+    shell: /bin/bash
+
+- name: Create .ssh directory
+  ansible.builtin.file:
+    path: /home/deploy_user/.ssh
+    state: directory
+    owner: deploy_user
+    group: deploy_user
+    mode: '0700'
+
+- name: Add authorized keys
+  ansible.builtin.authorized_key:
+    user: deploy_user
+    key: "{{ lookup('file', item) }}"
+  with_items: "{{ ssh_keys }}"
+
+- name: Add deploy_user to sudoers
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: '^deploy_user'
+    line: 'deploy_user ALL=(ALL) NOPASSWD:ALL'
