@@ -192,6 +192,24 @@
         fail_msg: "Nginx container is not running"
         success_msg: "Nginx container is running correctly"
 
+    - name: Check Nginx container status
+      docker_container_info:
+        name: nginx
+      register: nginx_info
+
+    - name: Display Nginx container status
+      debug:
+        var: nginx_info.container.State
+
+    - name: Check if port 80 is listening
+      shell: netstat -tuln | grep :80
+      register: port_check
+      ignore_errors: yes
+
+    - name: Display port 80 status
+      debug:
+        var: port_check.stdout_lines
+
     - name: Remove stopped containers
       docker_prune:
         containers: yes
