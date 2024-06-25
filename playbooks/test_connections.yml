@@ -1,0 +1,12 @@
+---
+- name: Test connections to all hosts using default ec2_user
+  # hosts: dev_web_servers, stg_web_servers, pro_web_servers
+  # hosts: dev_web_servers:stg_web_servers:pro_web_servers
+  hosts: dev_web_servers
+  tasks:
+    - name: Ping my hosts
+      ansible.builtin.ping:
+
+    - name: Print message
+      ansible.builtin.debug:
+        msg: Hello world

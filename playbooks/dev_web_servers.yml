@@ -2,13 +2,6 @@
 - name: Playbook to switch between ec2_user and deploy_user
   hosts: dev_web_servers
   tasks:
-    - name: Ping my hosts
-      ansible.builtin.ping:
-
-    - name: Print message
-      ansible.builtin.debug:
-        msg: Hello world
-
     - name: Task as ec2_user
       ansible.builtin.command:
         cmd: echo "This is ec2_user"

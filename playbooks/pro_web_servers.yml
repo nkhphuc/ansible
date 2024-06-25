@@ -1,10 +1,4 @@
 ---
 - name: My first play
-  hosts: dev_webs
+  hosts: pro_web_servers
   tasks:
-   - name: Ping my hosts
-     ansible.builtin.ping:
-
-   - name: Print message
-     ansible.builtin.debug:
-      msg: Hello world
