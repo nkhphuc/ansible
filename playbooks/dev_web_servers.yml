@@ -1,5 +1,5 @@
 ---
-- name: Playbook to switch between ec2_user and deploy_user, install PostgreSQL and DragonflyDB
+- name: Playbook to deploy and run nkhphuc/template7pg as deploy_user
   hosts: dev_web_servers
   become: yes
   vars:
@@ -8,25 +8,31 @@
     postgres_version: "16"
     postgres_port: "5432"
     dragonfly_port: "6379"
+    rails_master_key: "{{ vault_rails_master_key }}"
+    template7pg_port: "3000"
 
   tasks:
-    - name: Task as ec2_user
-      ansible.builtin.command:
-        cmd: echo "This is ec2_user"
+    # - name: Task as ec2_user
+    #   ansible.builtin.command:
+    #     cmd: echo "This is ec2_user"
 
-    - name: Task as deploy_user
-      ansible.builtin.command:
-        cmd: echo "This is deploy_user"
-      become: yes
-      become_user: "{{ deploy_user }}"
-      vars:
-        ansible_ssh_private_key_file: "{{ deploy_user_key }}"
+    # - name: Task as deploy_user
+    #   ansible.builtin.command:
+    #     cmd: echo "This is deploy_user"
+    #   become: yes
+    #   become_user: "{{ deploy_user }}"
+    #   vars:
+    #     ansible_ssh_private_key_file: "{{ deploy_user_key }}"
 
-    - name: Task that requires super user privileges
-      ansible.builtin.command:
-        cmd: echo "This is root"
-      become: yes
-      become_user: root
+    # - name: Task that requires super user privileges
+    #   ansible.builtin.command:
+    #     cmd: echo "This is root"
+    #   become: yes
+    #   become_user: root
+
+    - name: Debug vault variables
+      debug:
+        msg: "Rails Master Key: {{ vault_rails_master_key }}"
 
     - name: Create PostgreSQL data directory
       file:
@@ -87,6 +93,62 @@
           - dragonfly_container_info.container.State.Running
         fail_msg: "DragonflyDB container is not running"
         success_msg: "DragonflyDB container is running correctly"
+
+    - name: Ensure deploy_user is in the docker group
+      user:
+        name: "{{ deploy_user }}"
+        groups: docker
+        append: yes
+
+    - name: Pull nkhphuc/template7pg:latest Docker image
+      docker_image:
+        name: nkhphuc/template7pg
+        source: pull
+        tag: latest
+      become: yes
+      become_user: "{{ deploy_user }}"
+
+    - name: Run nkhphuc/template7pg Docker container
+      docker_container:
+        name: template7pg
+        image: nkhphuc/template7pg:latest
+        state: started
+        restart_policy: always
+        ports:
+          - "{{ template7pg_port }}:3000"
+        env:
+          RAILS_MASTER_KEY: "{{ rails_master_key }}"
+          # Add any other necessary environment variables here
+      become: yes
+      become_user: "{{ deploy_user }}"
+
+    - name: Check if template7pg container is running
+      docker_container_info:
+        name: template7pg
+      register: template7pg_container_info
+      become: yes
+      become_user: "{{ deploy_user }}"
+
+    - name: Display template7pg container status
+      debug:
+        msg: "template7pg container is {{ 'running' if template7pg_container_info.container.State.Running else 'not running' }}"
+
+    - name: Ensure template7pg container is running
+      assert:
+        that:
+          - template7pg_container_info.container.State.Running
+        fail_msg: "template7pg container is not running"
+        success_msg: "template7pg container is running correctly"
+
+    - name: Get Docker logs for template7pg container
+      command: docker logs --tail 100 template7pg
+      register: template7pg_logs
+      become: yes
+      become_user: "{{ deploy_user }}"
+
+    - name: Display template7pg container logs
+      debug:
+        msg: "{{ template7pg_logs.stdout_lines }}"
 
     - name: Remove stopped containers
       docker_prune:

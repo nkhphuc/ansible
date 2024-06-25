@@ -14,6 +14,9 @@ ansible-playbook -i inventory/dev playbooks/test_connections.yml
 <!-- Install Docker and log in -->
 ansible-playbook -i inventory/dev playbooks/install_docker.yml --ask-vault-pass
 
+<!-- Install Postgresql, DragonflyDB and Project using Docker -->
+ansible-playbook -i inventory/dev playbooks/dev_web_servers.yml --ask-vault-pass
+
 <!-- Others -->
 <!-- Connect to server as ec2-user -->
 ssh -i /Users/hopee/downloads/rails-server.pem ec2-user@13.215.49.198
