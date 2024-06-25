@@ -1,6 +1,14 @@
 ---
-- name: Playbook to switch between ec2_user and deploy_user
+- name: Playbook to switch between ec2_user and deploy_user, install PostgreSQL and DragonflyDB
   hosts: dev_web_servers
+  become: yes
+  vars:
+    postgres_password: password
+    postgres_data_dir: /var/lib/postgresql/data
+    postgres_version: "16"
+    postgres_port: "5432"
+    dragonfly_port: "6379"
+
   tasks:
     - name: Task as ec2_user
       ansible.builtin.command:
@@ -19,3 +27,71 @@
         cmd: echo "This is root"
       become: yes
       become_user: root
+
+    - name: Create PostgreSQL data directory
+      file:
+        path: "{{ postgres_data_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Run PostgreSQL Docker container
+      docker_container:
+        name: postgres
+        image: "postgres:{{ postgres_version }}"
+        state: started
+        restart_policy: always
+        ports:
+          - "{{ postgres_port }}:5432"
+        env:
+          POSTGRES_PASSWORD: "{{ postgres_password }}"
+        volumes:
+          - "{{ postgres_data_dir }}:/var/lib/postgresql/data"
+
+    - name: Check if PostgreSQL container is running
+      docker_container_info:
+        name: postgres
+      register: postgres_container_info
+
+    - name: Display PostgreSQL container status
+      debug:
+        msg: "PostgreSQL container is {{ 'running' if postgres_container_info.container.State.Running else 'not running' }}"
+
+    - name: Ensure PostgreSQL container is running
+      assert:
+        that:
+          - postgres_container_info.container.State.Running
+        fail_msg: "PostgreSQL container is not running"
+        success_msg: "PostgreSQL container is running correctly"
+
+    - name: Run DragonflyDB Docker container
+      docker_container:
+        name: dragonflydb
+        image: docker.dragonflydb.io/dragonflydb/dragonfly
+        state: started
+        restart_policy: always
+        ports:
+          - "{{ dragonfly_port }}:6379"
+
+    - name: Check if DragonflyDB container is running
+      docker_container_info:
+        name: dragonflydb
+      register: dragonfly_container_info
+
+    - name: Display DragonflyDB container status
+      debug:
+        msg: "DragonflyDB container is {{ 'running' if dragonfly_container_info.container.State.Running else 'not running' }}"
+
+    - name: Ensure DragonflyDB container is running
+      assert:
+        that:
+          - dragonfly_container_info.container.State.Running
+        fail_msg: "DragonflyDB container is not running"
+        success_msg: "DragonflyDB container is running correctly"
+
+    - name: Remove stopped containers
+      docker_prune:
+        containers: yes
+
+    - name: Remove unused images
+      docker_prune:
+        images: yes
