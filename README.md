@@ -14,7 +14,7 @@ ansible-playbook -i inventory/dev playbooks/test_connections.yml
 <!-- Install Docker and log in -->
 ansible-playbook -i inventory/dev playbooks/install_docker.yml --ask-vault-pass
 
-<!-- Install Postgresql, DragonflyDB and Project using Docker -->
+<!-- Install Postgresql, DragonflyDB, Project and Nginx using Docker -->
 ansible-playbook -i inventory/dev playbooks/dev_web_servers.yml --ask-vault-pass
 
 <!-- Others -->

@@ -10,6 +10,7 @@
     dragonfly_port: "6379"
     rails_master_key: "{{ vault_rails_master_key }}"
     template7pg_port: "3000"
+    nginx_port: "80"
 
   tasks:
     # - name: Task as ec2_user
@@ -149,6 +150,47 @@
     - name: Display template7pg container logs
       debug:
         msg: "{{ template7pg_logs.stdout_lines }}"
+
+    - name: Create Nginx configuration file
+      template:
+        src: nginx.conf.j2
+        dest: /home/{{ deploy_user }}/nginx.conf
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_user }}"
+        mode: '0644'
+
+    - name: Run Nginx Docker container
+      docker_container:
+        name: nginx
+        image: nginx:latest
+        state: started
+        restart_policy: always
+        ports:
+          - "{{ nginx_port }}:80"
+        volumes:
+          - /home/{{ deploy_user }}/nginx.conf:/etc/nginx/nginx.conf:ro
+        links:
+          - template7pg
+      become: yes
+      become_user: "{{ deploy_user }}"
+
+    - name: Check if Nginx container is running
+      docker_container_info:
+        name: nginx
+      register: nginx_container_info
+      become: yes
+      become_user: "{{ deploy_user }}"
+
+    - name: Display Nginx container status
+      debug:
+        msg: "Nginx container is {{ 'running' if nginx_container_info.container.State.Running else 'not running' }}"
+
+    - name: Ensure Nginx container is running
+      assert:
+        that:
+          - nginx_container_info.container.State.Running
+        fail_msg: "Nginx container is not running"
+        success_msg: "Nginx container is running correctly"
 
     - name: Remove stopped containers
       docker_prune:
