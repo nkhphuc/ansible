@@ -1,0 +1,39 @@
+---
+- name: Gather facts about the system
+  hosts: dev_web_servers
+  tasks:
+    - name: Display OS information
+      debug:
+        msg: "OS: {{ ansible_distribution }} {{ ansible_distribution_version }}"
+
+    - name: Display Python version
+      command: python3 --version
+      register: python_version
+    - debug:
+        var: python_version.stdout
+
+- name: Install Docker and log in to Docker Hub
+  hosts: dev_web_servers
+  become: yes
+  tasks:
+    - name: Ensure dnf-plugins-core is installed
+      dnf:
+        name: dnf-plugins-core
+        state: present
+
+    - name: Ensure local bin is in PATH
+      lineinfile:
+        dest: /home/ec2-user/.bashrc
+        line: 'export PATH=$PATH:$HOME/.local/bin'
+        state: present
+      become_user: ec2-user
+
+  roles:
+    - docker
+
+  post_tasks:
+    - name: Reload bash profile
+      shell: source /home/ec2-user/.bashrc
+      args:
+        executable: /bin/bash
+      become_user: ec2-user
