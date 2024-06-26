@@ -12,267 +12,244 @@
     template7pg_port: "3000"
     nginx_port: "80"
 
+  roles:
+    - role: firewall
+      vars:
+        firewall_http_port: "{{ nginx_port }}"
   tasks:
-    - name: Ensure firewalld is installed
-      ansible.builtin.dnf:
-        name: firewalld
-        state: present
+    # - name: Restart Docker service
+    #   ansible.builtin.systemd:
+    #     name: docker
+    #     state: restarted
 
-    - name: Ensure firewalld is running and enabled
-      ansible.builtin.systemd:
-        name: firewalld
-        state: started
-        enabled: yes
+    # - name: Get containers connected to app_network
+    #   shell: docker network inspect app_network | grep '"Name":' | awk -F'"' '{print $4}'
+    #   register: connected_containers
+    #   ignore_errors: yes
 
-    - name: Open port 80 (HTTP) in firewalld
-      ansible.posix.firewalld:
-        port: 80/tcp
-        permanent: yes
-        state: enabled
-        immediate: yes
+    # - name: Disconnect containers from app_network
+    #   command: docker network disconnect -f app_network {{ item }}
+    #   loop: "{{ connected_containers.stdout_lines | default([]) }}"
+    #   ignore_errors: yes
+    #   when: connected_containers.rc is defined and connected_containers.rc == 0
 
-    - name: Check if port 80 is listening
-      shell: netstat -tuln | grep :80
-      register: port_check
-      ignore_errors: yes
+    # - name: Remove existing app_network
+    #   docker_network:
+    #     name: app_network
+    #     state: absent
+    #   ignore_errors: yes
 
-    - name: Display port 80 status
-      debug:
-        var: port_check.stdout_lines
+    # - name: Create Docker network
+    #   docker_network:
+    #     name: app_network
+    #     state: present
 
-    - name: Restart Docker service
-      ansible.builtin.systemd:
-        name: docker
-        state: restarted
+    # - name: Verify network creation
+    #   command: docker network inspect app_network
+    #   register: network_inspect
 
-    - name: Get containers connected to app_network
-      shell: docker network inspect app_network | grep '"Name":' | awk -F'"' '{print $4}'
-      register: connected_containers
-      ignore_errors: yes
+    # - name: Display network info
+    #   debug:
+    #     var: network_inspect.stdout_lines
 
-    - name: Disconnect containers from app_network
-      command: docker network disconnect -f app_network {{ item }}
-      loop: "{{ connected_containers.stdout_lines | default([]) }}"
-      ignore_errors: yes
-      when: connected_containers.rc is defined and connected_containers.rc == 0
+    # - name: Get list of all containers
+    #   docker_host_info:
+    #     containers: yes
+    #   register: docker_info
 
-    - name: Remove existing app_network
-      docker_network:
-        name: app_network
-        state: absent
-      ignore_errors: yes
+    # - name: Stop all running containers
+    #   docker_container:
+    #     name: "{{ item.Names[0] | regex_replace('^/', '') }}"
+    #     state: stopped
+    #   loop: "{{ docker_info.containers }}"
+    #   when: item.State == 'running'
+    #   ignore_errors: yes
 
-    - name: Create Docker network
-      docker_network:
-        name: app_network
-        state: present
+    # - name: Remove all containers
+    #   docker_container:
+    #     name: "{{ item.Names[0] | regex_replace('^/', '') }}"
+    #     state: absent
+    #   loop: "{{ docker_info.containers }}"
+    #   ignore_errors: yes
 
-    - name: Verify network creation
-      command: docker network inspect app_network
-      register: network_inspect
+    # - name: Create PostgreSQL data directory
+    #   file:
+    #     path: "{{ postgres_data_dir }}"
+    #     state: directory
+    #     mode: '0755'
 
-    - name: Display network info
-      debug:
-        var: network_inspect.stdout_lines
+    # - name: Run PostgreSQL Docker container
+    #   docker_container:
+    #     name: postgres
+    #     image: "postgres:{{ postgres_version }}"
+    #     state: started
+    #     restart_policy: always
+    #     ports:
+    #       - "{{ postgres_port }}:5432"
+    #     expose:
+    #       - "5432"
+    #     env:
+    #       POSTGRES_PASSWORD: "{{ postgres_password }}"
+    #     volumes:
+    #       - "{{ postgres_data_dir }}:/var/lib/postgresql/data"
+    #     networks:
+    #       - name: app_network
 
-    - name: Get list of all containers
-      docker_host_info:
-        containers: yes
-      register: docker_info
+    # - name: Run DragonflyDB Docker container
+    #   docker_container:
+    #     name: dragonflydb
+    #     image: docker.dragonflydb.io/dragonflydb/dragonfly
+    #     state: started
+    #     restart_policy: always
+    #     ports:
+    #       - "{{ dragonfly_port }}:6379"
+    #     expose:
+    #       - "6379"
+    #     networks:
+    #       - name: app_network
 
-    - name: Stop all running containers
-      docker_container:
-        name: "{{ item.Names[0] | regex_replace('^/', '') }}"
-        state: stopped
-      loop: "{{ docker_info.containers }}"
-      when: item.State == 'running'
-      ignore_errors: yes
+    # - name: Pull nkhphuc/template7pg:latest Docker image
+    #   docker_image:
+    #     name: nkhphuc/template7pg
+    #     source: pull
+    #     tag: latest
 
-    - name: Remove all containers
-      docker_container:
-        name: "{{ item.Names[0] | regex_replace('^/', '') }}"
-        state: absent
-      loop: "{{ docker_info.containers }}"
-      ignore_errors: yes
+    # - name: Create directory on host for template7pg tmp files
+    #   file:
+    #     path: /home/ec2-user/template7pg_tmp
+    #     state: directory
+    #     mode: '0755'
+    #     owner: '1000'
+    #     group: '1000'
 
-    - name: Create PostgreSQL data directory
-      file:
-        path: "{{ postgres_data_dir }}"
-        state: directory
-        mode: '0755'
+    # - name: Copy files from image to host
+    #   command: docker run --rm -v /home/ec2-user/template7pg_tmp:/backup nkhphuc/template7pg:latest cp -r /rails/. /backup
 
-    - name: Run PostgreSQL Docker container
-      docker_container:
-        name: postgres
-        image: "postgres:{{ postgres_version }}"
-        state: started
-        restart_policy: always
-        ports:
-          - "{{ postgres_port }}:5432"
-        expose:
-          - "5432"
-        env:
-          POSTGRES_PASSWORD: "{{ postgres_password }}"
-        volumes:
-          - "{{ postgres_data_dir }}:/var/lib/postgresql/data"
-        networks:
-          - name: app_network
+    # - name: Set permissions on copied files
+    #   file:
+    #     path: /home/ec2-user/template7pg_tmp
+    #     owner: '1000'
+    #     group: '1000'
+    #     mode: '0755'
+    #     recurse: yes
 
-    - name: Run DragonflyDB Docker container
-      docker_container:
-        name: dragonflydb
-        image: docker.dragonflydb.io/dragonflydb/dragonfly
-        state: started
-        restart_policy: always
-        ports:
-          - "{{ dragonfly_port }}:6379"
-        expose:
-          - "6379"
-        networks:
-          - name: app_network
+    # - name: Run nkhphuc/template7pg Docker container
+    #   docker_container:
+    #     name: template7pg
+    #     image: nkhphuc/template7pg:latest
+    #     state: started
+    #     restart_policy: always
+    #     ports:
+    #       - "{{ template7pg_port }}:3000"
+    #     expose:
+    #       - "3000"
+    #     env:
+    #       RAILS_MASTER_KEY: "{{ rails_master_key }}"
+    #     networks:
+    #       - name: app_network
+    #     volumes:
+    #       - "/home/ec2-user/template7pg_tmp:/rails"
 
-    - name: Pull nkhphuc/template7pg:latest Docker image
-      docker_image:
-        name: nkhphuc/template7pg
-        source: pull
-        tag: latest
+    # - name: Create Nginx configuration file
+    #   template:
+    #     src: nginx.conf.j2
+    #     dest: /home/ec2-user/nginx.conf
+    #     owner: ec2-user
+    #     group: ec2-user
+    #     mode: '0644'
 
-    - name: Create directory on host for template7pg tmp files
-      file:
-        path: /home/ec2-user/template7pg_tmp
-        state: directory
-        mode: '0755'
-        owner: '1000'
-        group: '1000'
+    # - name: Run Nginx Docker container
+    #   docker_container:
+    #     name: nginx
+    #     image: nginx:latest
+    #     state: started
+    #     restart_policy: always
+    #     ports:
+    #       - "{{ nginx_port }}:80"
+    #     volumes:
+    #       - /home/ec2-user/nginx.conf:/etc/nginx/nginx.conf:ro
+    #     networks:
+    #       - name: app_network
 
-    - name: Copy files from image to host
-      command: docker run --rm -v /home/ec2-user/template7pg_tmp:/backup nkhphuc/template7pg:latest cp -r /rails/. /backup
+    # - name: List all running containers
+    #   command: docker ps
+    #   register: docker_ps_result
 
-    - name: Set permissions on copied files
-      file:
-        path: /home/ec2-user/template7pg_tmp
-        owner: '1000'
-        group: '1000'
-        mode: '0755'
-        recurse: yes
+    # - name: Display running containers
+    #   debug:
+    #     var: docker_ps_result.stdout_lines
 
-    - name: Run nkhphuc/template7pg Docker container
-      docker_container:
-        name: template7pg
-        image: nkhphuc/template7pg:latest
-        state: started
-        restart_policy: always
-        ports:
-          - "{{ template7pg_port }}:3000"
-        expose:
-          - "3000"
-        env:
-          RAILS_MASTER_KEY: "{{ rails_master_key }}"
-        networks:
-          - name: app_network
-        volumes:
-          - "/home/ec2-user/template7pg_tmp:/rails"
+    # - name: Inspect Docker network
+    #   command: docker network inspect app_network
+    #   register: network_info
 
-    - name: Create Nginx configuration file
-      template:
-        src: nginx.conf.j2
-        dest: /home/ec2-user/nginx.conf
-        owner: ec2-user
-        group: ec2-user
-        mode: '0644'
+    # - name: Display network info
+    #   debug:
+    #     var: network_info.stdout_lines
 
-    - name: Run Nginx Docker container
-      docker_container:
-        name: nginx
-        image: nginx:latest
-        state: started
-        restart_policy: always
-        ports:
-          - "{{ nginx_port }}:80"
-        volumes:
-          - /home/ec2-user/nginx.conf:/etc/nginx/nginx.conf:ro
-        networks:
-          - name: app_network
+    # - name: Test connection to Rails app from Nginx container
+    #   command: docker exec nginx curl http://template7pg:3000
+    #   register: curl_result
+    #   ignore_errors: yes
 
-    - name: List all running containers
-      command: docker ps
-      register: docker_ps_result
+    # - name: Display curl result
+    #   debug:
+    #     var: curl_result
 
-    - name: Display running containers
-      debug:
-        var: docker_ps_result.stdout_lines
+    # - name: Inspect Docker network
+    #   command: docker network inspect app_network
+    #   register: network_info
 
-    - name: Inspect Docker network
-      command: docker network inspect app_network
-      register: network_info
+    # - name: Display network info
+    #   debug:
+    #     var: network_info.stdout_lines
 
-    - name: Display network info
-      debug:
-        var: network_info.stdout_lines
+    # - name: Ping template7pg from Nginx container
+    #   command: docker exec nginx ping -c 4 template7pg
+    #   register: ping_result
+    #   ignore_errors: yes
 
-    - name: Test connection to Rails app from Nginx container
-      command: docker exec nginx curl http://template7pg:3000
-      register: curl_result
-      ignore_errors: yes
+    # - name: Display ping result
+    #   debug:
+    #     var: ping_result.stdout_lines
 
-    - name: Display curl result
-      debug:
-        var: curl_result
+    # - name: Curl template7pg from Nginx container
+    #   command: docker exec nginx curl -v http://template7pg:3000
+    #   register: curl_result
+    #   ignore_errors: yes
 
-    - name: Inspect Docker network
-      command: docker network inspect app_network
-      register: network_info
+    # - name: Display curl result
+    #   debug:
+    #     var: curl_result.stdout_lines
 
-    - name: Display network info
-      debug:
-        var: network_info.stdout_lines
+    # - name: Check listening ports in template7pg
+    #   command: docker exec template7pg netstat -tuln
+    #   register: netstat_result
 
-    - name: Ping template7pg from Nginx container
-      command: docker exec nginx ping -c 4 template7pg
-      register: ping_result
-      ignore_errors: yes
+    # - name: Display netstat result
+    #   debug:
+    #     var: netstat_result.stdout_lines
 
-    - name: Display ping result
-      debug:
-        var: ping_result.stdout_lines
+    # - name: Check Nginx configuration
+    #   command: docker exec nginx cat /etc/nginx/nginx.conf
+    #   register: nginx_conf
 
-    - name: Curl template7pg from Nginx container
-      command: docker exec nginx curl -v http://template7pg:3000
-      register: curl_result
-      ignore_errors: yes
+    # - name: Display Nginx configuration
+    #   debug:
+    #     var: nginx_conf.stdout_lines
 
-    - name: Display curl result
-      debug:
-        var: curl_result.stdout_lines
+    # - name: Inspect Docker network
+    #   command: docker network inspect app_network
+    #   register: network_info
 
-    - name: Check listening ports in template7pg
-      command: docker exec template7pg netstat -tuln
-      register: netstat_result
+    # - name: Display network info
+    #   debug:
+    #     var: network_info.stdout_lines
 
-    - name: Display netstat result
-      debug:
-        var: netstat_result.stdout_lines
+    # - name: Remove stopped containers
+    #   docker_prune:
+    #     containers: yes
 
-    - name: Check Nginx configuration
-      command: docker exec nginx cat /etc/nginx/nginx.conf
-      register: nginx_conf
-
-    - name: Display Nginx configuration
-      debug:
-        var: nginx_conf.stdout_lines
-
-    - name: Inspect Docker network
-      command: docker network inspect app_network
-      register: network_info
-
-    - name: Display network info
-      debug:
-        var: network_info.stdout_lines
-
-    - name: Remove stopped containers
-      docker_prune:
-        containers: yes
-
-    - name: Remove unused images
-      docker_prune:
-        images: yes
+    # - name: Remove unused images
+    #   docker_prune:
+    #     images: yes

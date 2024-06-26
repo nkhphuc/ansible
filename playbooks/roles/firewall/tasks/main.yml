@@ -1,0 +1,38 @@
+---
+- name: Ensure firewalld is installed
+  ansible.builtin.dnf:
+    name: firewalld
+    state: present
+
+- name: Ensure firewalld is running and enabled
+  ansible.builtin.systemd:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: Check if port {{ firewall_http_port }} is already open
+  ansible.posix.firewalld:
+    port: "{{ firewall_http_port }}/tcp"
+    permanent: yes
+    state: enabled
+  check_mode: yes
+  register: firewall_check
+  changed_when: false
+
+- name: Open port {{ firewall_http_port }} (HTTP) in firewalld if not already open
+  ansible.posix.firewalld:
+    port: "{{ firewall_http_port }}/tcp"
+    permanent: yes
+    state: enabled
+    immediate: yes
+  when: firewall_check.changed
+
+- name: Check if port {{ firewall_http_port }} is listening
+  shell: netstat -tuln | grep :{{ firewall_http_port }}
+  register: port_check
+  changed_when: false
+  failed_when: false
+
+- name: Display port {{ firewall_http_port }} status
+  debug:
+    msg: "Port {{ firewall_http_port }} is {{ 'listening' if port_check.rc == 0 else 'not listening' }}"
