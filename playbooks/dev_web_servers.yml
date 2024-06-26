@@ -16,6 +16,8 @@
     - role: firewall
       vars:
         firewall_http_port: "{{ nginx_port }}"
+    - role: docker
+
   tasks:
     # - name: Restart Docker service
     #   ansible.builtin.systemd:
