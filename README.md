@@ -21,6 +21,12 @@ ansible-playbook -i inventory/dev playbooks/dev_web_servers.yml --ask-vault-pass
 <!-- Connect to server as ec2-user -->
 ssh -i /Users/hopee/downloads/rails-server.pem ec2-user@13.215.49.198
 
+<!-- Get UID and GID of user in the container -->
+docker run --rm nkhphuc/template7pg:latest id
+
+<!-- Access docker image -->
+docker run -it --rm nkhphuc/template7pg:latest /bin/bash
+
 <!-- Remove all docker containers and networks -->
 docker stop $(docker ps -aq)
 docker rm $(docker ps -aq)
