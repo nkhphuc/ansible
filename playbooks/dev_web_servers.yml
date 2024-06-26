@@ -137,6 +137,25 @@
         source: pull
         tag: latest
 
+    - name: Create directory on host for template7pg tmp files
+      file:
+        path: /home/ec2-user/template7pg_tmp
+        state: directory
+        mode: '0755'
+        owner: '1000'
+        group: '1000'
+
+    - name: Copy files from image to host
+      command: docker run --rm -v /home/ec2-user/template7pg_tmp:/backup nkhphuc/template7pg:latest cp -r /rails/. /backup
+
+    - name: Set permissions on copied files
+      file:
+        path: /home/ec2-user/template7pg_tmp
+        owner: '1000'
+        group: '1000'
+        mode: '0755'
+        recurse: yes
+
     - name: Run nkhphuc/template7pg Docker container
       docker_container:
         name: template7pg
@@ -151,6 +170,8 @@
           RAILS_MASTER_KEY: "{{ rails_master_key }}"
         networks:
           - name: app_network
+        volumes:
+          - "/home/ec2-user/template7pg_tmp:/rails"
 
     - name: Create Nginx configuration file
       template:
