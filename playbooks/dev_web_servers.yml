@@ -1,5 +1,5 @@
 ---
-- name: Playbook to deploy and run nkhphuc/template7pg as deploy_user
+- name: Playbook to deploy and run nkhphuc/template7pg
   hosts: dev_web_servers
   become: yes
   vars:
@@ -13,24 +13,6 @@
     nginx_port: "80"
 
   tasks:
-    # - name: Task as ec2_user
-    #   ansible.builtin.command:
-    #     cmd: echo "This is ec2_user"
-
-    # - name: Task as deploy_user
-    #   ansible.builtin.command:
-    #     cmd: echo "This is deploy_user"
-    #   become: yes
-    #   become_user: "{{ deploy_user }}"
-    #   vars:
-    #     ansible_ssh_private_key_file: "{{ deploy_user_key }}"
-
-    # - name: Task that requires super user privileges
-    #   ansible.builtin.command:
-    #     cmd: echo "This is root"
-    #   become: yes
-    #   become_user: root
-
     - name: Ensure firewalld is installed
       ansible.builtin.dnf:
         name: firewalld
@@ -49,15 +31,69 @@
         state: enabled
         immediate: yes
 
+    - name: Check if port 80 is listening
+      shell: netstat -tuln | grep :80
+      register: port_check
+      ignore_errors: yes
+
+    - name: Display port 80 status
+      debug:
+        var: port_check.stdout_lines
+
     - name: Restart Docker service
       ansible.builtin.systemd:
         name: docker
         state: restarted
-      become: yes
 
-    - name: Debug vault variables
+    - name: Get containers connected to app_network
+      shell: docker network inspect app_network | grep '"Name":' | awk -F'"' '{print $4}'
+      register: connected_containers
+      ignore_errors: yes
+
+    - name: Disconnect containers from app_network
+      command: docker network disconnect -f app_network {{ item }}
+      loop: "{{ connected_containers.stdout_lines | default([]) }}"
+      ignore_errors: yes
+      when: connected_containers.rc is defined and connected_containers.rc == 0
+
+    - name: Remove existing app_network
+      docker_network:
+        name: app_network
+        state: absent
+      ignore_errors: yes
+
+    - name: Create Docker network
+      docker_network:
+        name: app_network
+        state: present
+
+    - name: Verify network creation
+      command: docker network inspect app_network
+      register: network_inspect
+
+    - name: Display network info
       debug:
-        msg: "Rails Master Key: {{ vault_rails_master_key }}"
+        var: network_inspect.stdout_lines
+
+    - name: Get list of all containers
+      docker_host_info:
+        containers: yes
+      register: docker_info
+
+    - name: Stop all running containers
+      docker_container:
+        name: "{{ item.Names[0] | regex_replace('^/', '') }}"
+        state: stopped
+      loop: "{{ docker_info.containers }}"
+      when: item.State == 'running'
+      ignore_errors: yes
+
+    - name: Remove all containers
+      docker_container:
+        name: "{{ item.Names[0] | regex_replace('^/', '') }}"
+        state: absent
+      loop: "{{ docker_info.containers }}"
+      ignore_errors: yes
 
     - name: Create PostgreSQL data directory
       file:
@@ -73,26 +109,14 @@
         restart_policy: always
         ports:
           - "{{ postgres_port }}:5432"
+        expose:
+          - "5432"
         env:
           POSTGRES_PASSWORD: "{{ postgres_password }}"
         volumes:
           - "{{ postgres_data_dir }}:/var/lib/postgresql/data"
-
-    - name: Check if PostgreSQL container is running
-      docker_container_info:
-        name: postgres
-      register: postgres_container_info
-
-    - name: Display PostgreSQL container status
-      debug:
-        msg: "PostgreSQL container is {{ 'running' if postgres_container_info.container.State.Running else 'not running' }}"
-
-    - name: Ensure PostgreSQL container is running
-      assert:
-        that:
-          - postgres_container_info.container.State.Running
-        fail_msg: "PostgreSQL container is not running"
-        success_msg: "PostgreSQL container is running correctly"
+        networks:
+          - name: app_network
 
     - name: Run DragonflyDB Docker container
       docker_container:
@@ -102,36 +126,16 @@
         restart_policy: always
         ports:
           - "{{ dragonfly_port }}:6379"
-
-    - name: Check if DragonflyDB container is running
-      docker_container_info:
-        name: dragonflydb
-      register: dragonfly_container_info
-
-    - name: Display DragonflyDB container status
-      debug:
-        msg: "DragonflyDB container is {{ 'running' if dragonfly_container_info.container.State.Running else 'not running' }}"
-
-    - name: Ensure DragonflyDB container is running
-      assert:
-        that:
-          - dragonfly_container_info.container.State.Running
-        fail_msg: "DragonflyDB container is not running"
-        success_msg: "DragonflyDB container is running correctly"
-
-    - name: Ensure deploy_user is in the docker group
-      user:
-        name: "{{ deploy_user }}"
-        groups: docker
-        append: yes
+        expose:
+          - "6379"
+        networks:
+          - name: app_network
 
     - name: Pull nkhphuc/template7pg:latest Docker image
       docker_image:
         name: nkhphuc/template7pg
         source: pull
         tag: latest
-      become: yes
-      become_user: "{{ deploy_user }}"
 
     - name: Run nkhphuc/template7pg Docker container
       docker_container:
@@ -141,46 +145,19 @@
         restart_policy: always
         ports:
           - "{{ template7pg_port }}:3000"
+        expose:
+          - "3000"
         env:
           RAILS_MASTER_KEY: "{{ rails_master_key }}"
-          # Add any other necessary environment variables here
-      become: yes
-      become_user: "{{ deploy_user }}"
-
-    - name: Check if template7pg container is running
-      docker_container_info:
-        name: template7pg
-      register: template7pg_container_info
-      become: yes
-      become_user: "{{ deploy_user }}"
-
-    - name: Display template7pg container status
-      debug:
-        msg: "template7pg container is {{ 'running' if template7pg_container_info.container.State.Running else 'not running' }}"
-
-    - name: Ensure template7pg container is running
-      assert:
-        that:
-          - template7pg_container_info.container.State.Running
-        fail_msg: "template7pg container is not running"
-        success_msg: "template7pg container is running correctly"
-
-    - name: Get Docker logs for template7pg container
-      command: docker logs --tail 100 template7pg
-      register: template7pg_logs
-      become: yes
-      become_user: "{{ deploy_user }}"
-
-    - name: Display template7pg container logs
-      debug:
-        msg: "{{ template7pg_logs.stdout_lines }}"
+        networks:
+          - name: app_network
 
     - name: Create Nginx configuration file
       template:
         src: nginx.conf.j2
-        dest: /home/{{ deploy_user }}/nginx.conf
-        owner: "{{ deploy_user }}"
-        group: "{{ deploy_user }}"
+        dest: /home/ec2-user/nginx.conf
+        owner: ec2-user
+        group: ec2-user
         mode: '0644'
 
     - name: Run Nginx Docker container
@@ -192,47 +169,84 @@
         ports:
           - "{{ nginx_port }}:80"
         volumes:
-          - /home/{{ deploy_user }}/nginx.conf:/etc/nginx/nginx.conf:ro
-        links:
-          - template7pg
-      become: yes
-      become_user: "{{ deploy_user }}"
+          - /home/ec2-user/nginx.conf:/etc/nginx/nginx.conf:ro
+        networks:
+          - name: app_network
 
-    - name: Check if Nginx container is running
-      docker_container_info:
-        name: nginx
-      register: nginx_container_info
-      become: yes
-      become_user: "{{ deploy_user }}"
+    - name: List all running containers
+      command: docker ps
+      register: docker_ps_result
 
-    - name: Display Nginx container status
+    - name: Display running containers
       debug:
-        msg: "Nginx container is {{ 'running' if nginx_container_info.container.State.Running else 'not running' }}"
+        var: docker_ps_result.stdout_lines
 
-    - name: Ensure Nginx container is running
-      assert:
-        that:
-          - nginx_container_info.container.State.Running
-        fail_msg: "Nginx container is not running"
-        success_msg: "Nginx container is running correctly"
+    - name: Inspect Docker network
+      command: docker network inspect app_network
+      register: network_info
 
-    - name: Check Nginx container status
-      docker_container_info:
-        name: nginx
-      register: nginx_info
-
-    - name: Display Nginx container status
+    - name: Display network info
       debug:
-        var: nginx_info.container.State
+        var: network_info.stdout_lines
 
-    - name: Check if port 80 is listening
-      shell: netstat -tuln | grep :80
-      register: port_check
+    - name: Test connection to Rails app from Nginx container
+      command: docker exec nginx curl http://template7pg:3000
+      register: curl_result
       ignore_errors: yes
 
-    - name: Display port 80 status
+    - name: Display curl result
       debug:
-        var: port_check.stdout_lines
+        var: curl_result
+
+    - name: Inspect Docker network
+      command: docker network inspect app_network
+      register: network_info
+
+    - name: Display network info
+      debug:
+        var: network_info.stdout_lines
+
+    - name: Ping template7pg from Nginx container
+      command: docker exec nginx ping -c 4 template7pg
+      register: ping_result
+      ignore_errors: yes
+
+    - name: Display ping result
+      debug:
+        var: ping_result.stdout_lines
+
+    - name: Curl template7pg from Nginx container
+      command: docker exec nginx curl -v http://template7pg:3000
+      register: curl_result
+      ignore_errors: yes
+
+    - name: Display curl result
+      debug:
+        var: curl_result.stdout_lines
+
+    - name: Check listening ports in template7pg
+      command: docker exec template7pg netstat -tuln
+      register: netstat_result
+
+    - name: Display netstat result
+      debug:
+        var: netstat_result.stdout_lines
+
+    - name: Check Nginx configuration
+      command: docker exec nginx cat /etc/nginx/nginx.conf
+      register: nginx_conf
+
+    - name: Display Nginx configuration
+      debug:
+        var: nginx_conf.stdout_lines
+
+    - name: Inspect Docker network
+      command: docker network inspect app_network
+      register: network_info
+
+    - name: Display network info
+      debug:
+        var: network_info.stdout_lines
 
     - name: Remove stopped containers
       docker_prune:
