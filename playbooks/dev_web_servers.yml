@@ -31,6 +31,30 @@
     #   become: yes
     #   become_user: root
 
+    - name: Ensure firewalld is installed
+      ansible.builtin.dnf:
+        name: firewalld
+        state: present
+
+    - name: Ensure firewalld is running and enabled
+      ansible.builtin.systemd:
+        name: firewalld
+        state: started
+        enabled: yes
+
+    - name: Open port 80 (HTTP) in firewalld
+      ansible.posix.firewalld:
+        port: 80/tcp
+        permanent: yes
+        state: enabled
+        immediate: yes
+
+    - name: Restart Docker service
+      ansible.builtin.systemd:
+        name: docker
+        state: restarted
+      become: yes
+
     - name: Debug vault variables
       debug:
         msg: "Rails Master Key: {{ vault_rails_master_key }}"
