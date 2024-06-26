@@ -1,0 +1,54 @@
+---
+- name: Check if DragonflyDB container exists
+  docker_container_info:
+    name: dragonflydb
+  register: dragonflydb_container_info
+
+- name: Check if DragonflyDB container is in the correct network
+  docker_network:
+    name: "{{ docker_network_name }}"
+    connected:
+      - dragonflydb
+  register: dragonflydb_network_check
+  ignore_errors: yes
+  when: dragonflydb_container_info.exists
+
+- name: Remove existing DragonflyDB container if not in correct state
+  docker_container:
+    name: dragonflydb
+    state: absent
+  when: >
+    (dragonflydb_container_info.exists and dragonflydb_container_info.container.State.Status != 'running') or
+    (dragonflydb_container_info.exists and dragonflydb_network_check is failed)
+
+- name: Run DragonflyDB Docker container
+  docker_container:
+    name: dragonflydb
+    image: docker.dragonflydb.io/dragonflydb/dragonfly
+    state: started
+    restart_policy: always
+    ports:
+      - "{{ dragonfly_port }}:6379"
+    expose:
+      - "6379"
+    networks:
+      - name: "{{ docker_network_name }}"
+  when: not dragonflydb_container_info.exists or dragonflydb_container_info.container.State.Status != 'running'
+
+- name: Wait for DragonflyDB to be ready
+  wait_for:
+    host: localhost
+    port: "{{ dragonfly_port }}"
+    delay: 5
+    timeout: 30
+  when: not dragonflydb_container_info.exists or dragonflydb_container_info.container.State.Status != 'running'
+
+- name: Check DragonflyDB connection
+  command: >
+    docker exec dragonflydb redis-cli PING
+  register: dragonflydb_check
+  changed_when: false
+  failed_when: dragonflydb_check.rc != 0
+  retries: 3
+  delay: 5
+  until: dragonflydb_check.rc == 0

@@ -20,6 +20,7 @@
     - role: docker
     - role: docker_network
     - role: postgres
+    - role: dragonfly
 
   tasks:
     # - name: Get list of all containers
@@ -41,42 +42,6 @@
     #     state: absent
     #   loop: "{{ docker_info.containers }}"
     #   ignore_errors: yes
-
-    # - name: Create PostgreSQL data directory
-    #   file:
-    #     path: "{{ postgres_data_dir }}"
-    #     state: directory
-    #     mode: '0755'
-
-    # - name: Run PostgreSQL Docker container
-    #   docker_container:
-    #     name: postgres
-    #     image: "postgres:{{ postgres_version }}"
-    #     state: started
-    #     restart_policy: always
-    #     ports:
-    #       - "{{ postgres_port }}:5432"
-    #     expose:
-    #       - "5432"
-    #     env:
-    #       POSTGRES_PASSWORD: "{{ postgres_password }}"
-    #     volumes:
-    #       - "{{ postgres_data_dir }}:/var/lib/postgresql/data"
-    #     networks:
-    #       - name: app_network
-
-    # - name: Run DragonflyDB Docker container
-    #   docker_container:
-    #     name: dragonflydb
-    #     image: docker.dragonflydb.io/dragonflydb/dragonfly
-    #     state: started
-    #     restart_policy: always
-    #     ports:
-    #       - "{{ dragonfly_port }}:6379"
-    #     expose:
-    #       - "6379"
-    #     networks:
-    #       - name: app_network
 
     # - name: Pull nkhphuc/template7pg:latest Docker image
     #   docker_image:
