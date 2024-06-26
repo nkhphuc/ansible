@@ -3,10 +3,11 @@
   hosts: dev_web_servers
   become: yes
   vars:
-    postgres_password: password
-    postgres_data_dir: /var/lib/postgresql/data
+    postgres_password: "{{ vault_postgres_password | default('password') }}"
+    postgres_data_dir: "/var/lib/postgresql/data"
     postgres_version: "16"
     postgres_port: "5432"
+    docker_network_name: "app_network"
     dragonfly_port: "6379"
     rails_master_key: "{{ vault_rails_master_key }}"
     template7pg_port: "3000"
@@ -18,15 +19,9 @@
         firewall_http_port: "{{ nginx_port }}"
     - role: docker
     - role: docker_network
-      vars:
-        docker_network_name: app_network
+    - role: postgres
 
   tasks:
-    # - name: Restart Docker service
-    #   ansible.builtin.systemd:
-    #     name: docker
-    #     state: restarted
-
     # - name: Get list of all containers
     #   docker_host_info:
     #     containers: yes
