@@ -17,42 +17,15 @@
       vars:
         firewall_http_port: "{{ nginx_port }}"
     - role: docker
+    - role: docker_network
+      vars:
+        docker_network_name: app_network
 
   tasks:
     # - name: Restart Docker service
     #   ansible.builtin.systemd:
     #     name: docker
     #     state: restarted
-
-    # - name: Get containers connected to app_network
-    #   shell: docker network inspect app_network | grep '"Name":' | awk -F'"' '{print $4}'
-    #   register: connected_containers
-    #   ignore_errors: yes
-
-    # - name: Disconnect containers from app_network
-    #   command: docker network disconnect -f app_network {{ item }}
-    #   loop: "{{ connected_containers.stdout_lines | default([]) }}"
-    #   ignore_errors: yes
-    #   when: connected_containers.rc is defined and connected_containers.rc == 0
-
-    # - name: Remove existing app_network
-    #   docker_network:
-    #     name: app_network
-    #     state: absent
-    #   ignore_errors: yes
-
-    # - name: Create Docker network
-    #   docker_network:
-    #     name: app_network
-    #     state: present
-
-    # - name: Verify network creation
-    #   command: docker network inspect app_network
-    #   register: network_inspect
-
-    # - name: Display network info
-    #   debug:
-    #     var: network_inspect.stdout_lines
 
     # - name: Get list of all containers
     #   docker_host_info:

@@ -1,0 +1,40 @@
+---
+- name: Check if app_network exists
+  docker_network:
+    name: "{{ docker_network_name }}"
+  register: network_check
+  ignore_errors: yes
+
+- name: Manage app_network
+  block:
+    - name: Get containers connected to app_network
+      shell: docker network inspect {{ docker_network_name }} | grep '"Name":' | awk -F'"' '{print $4}'
+      register: connected_containers
+      ignore_errors: yes
+
+    - name: Disconnect containers from app_network
+      command: docker network disconnect -f {{ docker_network_name }} {{ item }}
+      loop: "{{ connected_containers.stdout_lines | default([]) }}"
+      ignore_errors: yes
+      when: connected_containers.rc is defined and connected_containers.rc == 0
+
+    - name: Remove existing app_network
+      docker_network:
+        name: "{{ docker_network_name }}"
+        state: absent
+      ignore_errors: yes
+
+    - name: Create Docker network
+      docker_network:
+        name: "{{ docker_network_name }}"
+        state: present
+
+    - name: Verify network creation
+      command: docker network inspect {{ docker_network_name }}
+      register: network_inspect
+
+    - name: Display network info
+      debug:
+        var: network_inspect.stdout_lines
+
+  when: network_check is failed or network_check is changed
