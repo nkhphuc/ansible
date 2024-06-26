@@ -21,6 +21,11 @@ ansible-playbook -i inventory/dev playbooks/dev_web_servers.yml --ask-vault-pass
 <!-- Connect to server as ec2-user -->
 ssh -i /Users/hopee/downloads/rails-server.pem ec2-user@13.215.49.198
 
+<!-- Remove all docker containers and networks -->
+docker stop $(docker ps -aq)
+docker rm $(docker ps -aq)
+docker network prune -f
+
 <!-- Switch to the deploy_user user -->
 sudo su - deploy_user
 
