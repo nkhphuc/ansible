@@ -1,4 +1,8 @@
 ---
+- name: Display OS information
+  debug:
+    msg: "OS: {{ ansible_distribution }} {{ ansible_distribution_version }}"
+
 - name: Check if Docker is installed
   command: docker --version
   register: docker_check
@@ -7,10 +11,6 @@
 
 - name: Install Docker if not present
   block:
-    - name: Display OS information
-      debug:
-        msg: "OS: {{ ansible_distribution }} {{ ansible_distribution_version }}"
-
     - name: Display Python version
       command: python3 --version
       register: python_version
@@ -93,6 +93,12 @@
 
   when: docker_check.rc != 0
 
+- name: Check Docker Hub login status
+  command: docker info
+  register: docker_info
+  changed_when: false
+  ignore_errors: yes
+
 - name: Log in to Docker Hub
   docker_login:
     username: "{{ docker_hub_username }}"
@@ -100,11 +106,14 @@
   no_log: true
   register: docker_login_result
   ignore_errors: yes
+  when: "'Username' not in docker_info.stdout"
 
 - name: Display Docker login error
   debug:
     msg: "Failed to log in to Docker Hub: {{ docker_login_result.msg }}"
-  when: docker_login_result is failed
+  when:
+    - "'Username' not in docker_info.stdout"
+    - docker_login_result is failed
 
 - name: Reload bash profile
   shell: source /home/ec2-user/.bashrc
