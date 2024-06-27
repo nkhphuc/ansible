@@ -5,15 +5,6 @@
     state: present
   become: yes
 
-- name: Check Git version
-  ansible.builtin.command: git --version
-  register: git_version
-  changed_when: false
-
-- name: Display Git version
-  ansible.builtin.debug:
-    var: git_version.stdout
-
 - name: Check GitHub connectivity
   ansible.builtin.uri:
     url: https://github.com
@@ -42,9 +33,17 @@
   changed_when: false
   when: git_repo_stat.stat.exists
 
+- name: Check if Docker containers are running
+  command: docker ps -q -f name=template7pg
+  register: docker_running
+  changed_when: false
+
 - name: Set update_needed fact
   set_fact:
-    update_needed: "{{ not git_repo_stat.stat.exists or (remote_head.stdout.split()[0] != local_head.stdout) }}"
+    update_needed: >-
+      {{ not git_repo_stat.stat.exists or
+         (remote_head.stdout.split()[0] != local_head.stdout) or
+         docker_running.stdout == '' }}
 
 - name: Clone the GitHub repository
   ansible.builtin.git:
@@ -62,31 +61,40 @@
     dest: "{{ project_directory }}/.env"
   when: env_file_path is defined and update_needed
 
-- name: Install Docker Compose
-  ansible.builtin.pip:
-    name: docker-compose
-    state: present
-  become: yes
-  when: update_needed
+- name: Check if Docker Compose is installed
+  command: docker compose version
+  register: docker_compose_check
+  ignore_errors: yes
+  changed_when: false
 
-- name: Set Docker Compose files based on Rails environment
-  set_fact:
-    compose_files:
-      - docker-compose.yml
-      - "{{ docker_compose_env_file }}"
+- name: Install Docker Compose if not present
+  block:
+    - name: Install Docker Compose
+      dnf:
+        name: docker-compose
+        state: present
+      become: yes
+
+  when: docker_compose_check.rc != 0
 
 - name: Set environment-specific Docker Compose file
   set_fact:
     docker_compose_env_file: >-
-      {% if rails_env == 'development' %}
-      docker-compose.override.yml
-      {% elif rails_env == 'staging' %}
-      docker-compose.staging.yml
-      {% elif rails_env == 'production' %}
-      docker-compose.prod.yml
-      {% else %}
-      docker-compose.override.yml
-      {% endif %}
+      {%- if rails_env == 'development' -%}
+        docker-compose.override.yml
+      {%- elif rails_env == 'staging' -%}
+        docker-compose.staging.yml
+      {%- elif rails_env == 'production' -%}
+        docker-compose.prod.yml
+      {%- else -%}
+        docker-compose.override.yml
+      {%- endif -%}
+
+- name: Set Docker Compose files based on Rails environment
+  set_fact:
+    compose_files:
+      - "docker-compose.yml"
+      - "{{ docker_compose_env_file }}"
 
 - name: Set base environment variables
   set_fact:
