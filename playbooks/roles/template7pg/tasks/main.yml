@@ -28,12 +28,14 @@
     mode: '0755'
     owner: '1000'
     group: '1000'
+  when: not template7pg_container_info.exists or template7pg_container_info.container.State.Status != 'running' or template7pg_network_check is failed
 
 - name: Copy files from image to host (if not already present)
   command: >
     docker run --rm -v {{ template7pg_data_dir }}:/backup nkhphuc/template7pg:latest
     bash -c "if [ -z \"$(ls -A /backup)\" ]; then cp -r /rails/. /backup; fi"
   changed_when: false
+  when: not template7pg_container_info.exists or template7pg_container_info.container.State.Status != 'running' or template7pg_network_check is failed
 
 - name: Set permissions on copied files
   file:
@@ -42,6 +44,7 @@
     group: '1000'
     mode: '0755'
     recurse: yes
+  when: not template7pg_container_info.exists or template7pg_container_info.container.State.Status != 'running' or template7pg_network_check is failed
 
 - name: Run template7pg Docker container
   docker_container:
@@ -59,6 +62,7 @@
       - name: "{{ docker_network_name }}"
     volumes:
       - "{{ template7pg_data_dir }}:/rails"
+  when: not template7pg_container_info.exists or template7pg_container_info.container.State.Status != 'running' or template7pg_network_check is failed
 
 - name: Wait for template7pg to be ready
   wait_for:
