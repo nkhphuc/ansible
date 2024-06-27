@@ -3,4 +3,3 @@ postgres_password: password
 postgres_data_dir: "/var/lib/postgresql/data"
 postgres_version: "16"
 postgres_port: "5432"
-docker_network_name: app_network

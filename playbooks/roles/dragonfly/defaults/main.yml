@@ -1,3 +1,2 @@
 ---
 dragonfly_port: "6379"
-docker_network_name: app_network
