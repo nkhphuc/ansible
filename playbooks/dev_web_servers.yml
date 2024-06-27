@@ -10,6 +10,7 @@
     docker_network_name: "app_network"
     dragonfly_port: "6379"
     rails_master_key: "{{ vault_rails_master_key }}"
+    rails_env: "development"
     template7pg_port: "3000"
     template7pg_data_dir: "/home/ec2-user/template7pg_data"
     nginx_port: "80"
@@ -22,7 +23,8 @@
     - role: docker_network
     - role: postgres
     - role: dragonfly
-    - role: template7pg
+    # remember to create SSH key from server to github if using this role
+    - role: template7pg_github
 
   tasks:
     # - name: Get list of all containers
