@@ -96,11 +96,33 @@
       - "docker-compose.yml"
       - "{{ docker_compose_env_file }}"
 
+- name: Change ownership of project directory
+  ansible.builtin.file:
+    path: "{{ project_directory }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    recurse: yes
+  become: yes
+  when: update_needed
+
+- name: Set necessary permissions on specific directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    mode: '0775'
+    recurse: yes
+  become: yes
+  loop:
+    - "{{ project_directory }}/tmp"
+    - "{{ project_directory }}/log"
+    - "{{ project_directory }}/public"
+  when: update_needed
+
 - name: Set base environment variables
   set_fact:
     base_env:
       RAILS_ENV: "{{ rails_env }}"
       RAILS_MASTER_KEY: "{{ rails_master_key }}"
+      USER: "{{ ansible_user_uid }}:{{ ansible_user_gid }}"
 
 - name: Set environment-specific variables
   set_fact:
