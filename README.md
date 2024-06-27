@@ -17,6 +17,7 @@ ansible-playbook -i inventory/dev playbooks/dev_web_servers.yml --ask-vault-pass
 <!-- Connect to server as ec2-user -->
 ssh -i /Users/hopee/downloads/rails-server.pem ec2-user@13.250.30.252
 
+<!-- Docker -->
 <!-- Get UID and GID of user in the container -->
 docker run --rm nkhphuc/template7pg:latest id
 
@@ -28,6 +29,7 @@ docker stop $(docker ps -aq)
 docker rm $(docker ps -aq)
 docker network prune -f
 
+<!-- Deploy user -->
 <!-- Switch to the deploy_user user -->
 sudo su - deploy_user
 
