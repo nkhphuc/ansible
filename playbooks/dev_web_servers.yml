@@ -9,6 +9,7 @@
     postgres_port: "5432"
     docker_network_name: "app_network"
     dragonfly_port: "6379"
+    github_repo_url: "{{ vault_github_repo_url }}"
     rails_master_key: "{{ vault_rails_master_key }}"
     rails_env: "development"
     template7pg_port: "3000"

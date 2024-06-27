@@ -49,12 +49,11 @@ ansible-vault create secret.yml
 <!-- Edit an encrypted file -->
 ansible-vault edit secret.yml
 
-<!-- Decrypt a file -->
-ansible-vault decrypt secret.yml
-
 <!-- View an encrypted file -->
 ansible-vault view secret.yml
 
 <!-- Encrypt an existing file -->
-ansible-vault encrypt playbooks/roles/docker/vars/main.yml
-ansible-vault decrypt playbooks/roles/docker/vars/main.yml
+ansible-vault encrypt inventory/dev/group_vars/all/vault.yml
+
+<!-- Decrypt an existing file -->
+ansible-vault decrypt inventory/dev/group_vars/all/vault.yml
