@@ -27,7 +27,7 @@
     - role: docker_network
     - role: postgres
     - role: dragonfly
-    - role: template7pg_github
+    - role: template7pg_github_compose
 
   tasks:
     # - name: Get list of all containers
