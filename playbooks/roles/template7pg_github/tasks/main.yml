@@ -5,6 +5,22 @@
     state: present
   become: yes
 
+- name: Check Git version
+  ansible.builtin.command: git --version
+  register: git_version
+  changed_when: false
+
+- name: Display Git version
+  ansible.builtin.debug:
+    var: git_version.stdout
+
+- name: Check GitHub connectivity
+  ansible.builtin.uri:
+    url: https://github.com
+    method: GET
+  register: github_check
+  failed_when: github_check.status != 200
+
 - name: Check if repository exists
   ansible.builtin.stat:
     path: "{{ project_directory }}/.git"
@@ -37,6 +53,8 @@
     dest: "{{ project_directory }}"
     force: yes
   when: update_needed
+  async: 120
+  poll: 10
 
 - name: Copy .env file if it exists
   ansible.builtin.copy:
@@ -90,7 +108,7 @@
     combined_env: "{{ base_env | combine(env_specific_vars[rails_env] | default({})) }}"
 
 - name: Run Docker Compose
-  community.docker.docker_compose:
+  community.docker.docker_compose_v2:
     project_src: "{{ project_directory }}"
     files: "{{ compose_files }}"
     state: present

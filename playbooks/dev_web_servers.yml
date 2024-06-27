@@ -23,7 +23,7 @@
     - role: docker_network
     - role: postgres
     - role: dragonfly
-    # remember to create SSH key from server to github if using this role
+    # if using below role, remember to create SSH key from server to github and running "ssh -T git@github.com" to make sure the key is recognized
     - role: template7pg_github
 
   tasks:
