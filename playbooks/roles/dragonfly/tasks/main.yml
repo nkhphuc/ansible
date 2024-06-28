@@ -9,13 +9,17 @@
   register: dragonflydb_container_info
 
 - name: Check if DragonflyDB container is in the correct network
-  docker_network:
-    name: "{{ docker_network_name }}"
-    connected:
-      - dragonflydb
-  register: dragonflydb_network_check
+  command: docker network inspect {{ docker_network_name }}
+  register: network_inspect
   changed_when: false
-  ignore_errors: yes
+  failed_when: false
+  when:
+    - dragonflydb_container_info.exists
+    - use_docker_network | bool
+
+- name: Set fact for network status
+  set_fact:
+    dragonflydb_in_network: "{{ network_inspect.stdout | from_json | json_query('[0].Containers[*].Name') | select('search', 'dragonflydb') | list | length > 0 }}"
   when:
     - dragonflydb_container_info.exists
     - use_docker_network | bool
@@ -26,7 +30,7 @@
     state: absent
   when: >
     (dragonflydb_container_info.exists and dragonflydb_container_info.container.State.Status != 'running') or
-    (dragonflydb_container_info.exists and dragonflydb_network_check is failed)
+    (dragonflydb_container_info.exists and use_docker_network | bool and not dragonflydb_in_network)
 
 - name: Run DragonflyDB Docker container
   docker_container:
@@ -39,7 +43,7 @@
     expose:
       - "6379"
     networks: "{{ [{'name': docker_network_name}] if use_docker_network | bool else omit }}"
-  when: not dragonflydb_container_info.exists or dragonflydb_container_info.container.State.Status != 'running'
+  when: not dragonflydb_container_info.exists or dragonflydb_container_info.container.State.Status != 'running' or (use_docker_network | bool and not dragonflydb_in_network)
 
 - name: Wait for DragonflyDB to be ready
   wait_for:
@@ -58,3 +62,11 @@
   retries: 3
   delay: 5
   until: dragonflydb_check.rc == 0
+
+- name: Ensure DragonflyDB is connected to the network
+  docker_network:
+    name: "{{ docker_network_name }}"
+    connected:
+      - dragonflydb
+    state: present
+  when: use_docker_network | bool
