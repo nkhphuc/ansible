@@ -10,14 +10,7 @@
     image: docker.dragonflydb.io/dragonflydb/dragonfly
     state: started
     restart_policy: always
-    network_mode: host
-    command: dragonfly --port {{ dragonfly_port }}
-  when: dragonflydb_container_info.exists == false
-
-- name: Wait for DragonflyDB to be ready
-  wait_for:
-    host: localhost
-    port: "{{ dragonfly_port }}"
-    delay: 5
-    timeout: 30
+    ports:
+      - "{{ dragonfly_port }}:6379"
+    command: dragonfly --bind 0.0.0.0 --port {{ dragonfly_port }}
   when: dragonflydb_container_info.exists == false

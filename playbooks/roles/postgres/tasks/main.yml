@@ -22,18 +22,10 @@
     image: "postgres:{{ postgres_version }}"
     state: started
     restart_policy: always
-    network_mode: host
+    ports:
+      - "{{ postgres_port }}:5432"
     env:
       POSTGRES_PASSWORD: "{{ postgres_password }}"
-    command: postgres -p {{ postgres_port }}
     volumes:
       - "{{ postgres_data_dir }}:/var/lib/postgresql/data"
-  when: postgres_container_info.exists == false
-
-- name: Wait for PostgreSQL to be ready
-  wait_for:
-    host: localhost
-    port: "{{ postgres_port }}"
-    delay: 10
-    timeout: 60
   when: postgres_container_info.exists == false
