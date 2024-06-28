@@ -1,0 +1,23 @@
+---
+- name: Check if DragonflyDB container is running
+  docker_container_info:
+    name: dragonflydb
+  register: dragonflydb_container_info
+
+- name: Run DragonflyDB Docker container
+  docker_container:
+    name: dragonflydb
+    image: docker.dragonflydb.io/dragonflydb/dragonfly
+    state: started
+    restart_policy: always
+    network_mode: host
+    command: dragonfly --port {{ dragonfly_port }}
+  when: dragonflydb_container_info.exists == false
+
+- name: Wait for DragonflyDB to be ready
+  wait_for:
+    host: localhost
+    port: "{{ dragonfly_port }}"
+    delay: 5
+    timeout: 30
+  when: dragonflydb_container_info.exists == false

@@ -1,46 +1,20 @@
 ---
-- name: Check if docker_network_name is defined
-  set_fact:
-    use_docker_network: "{{ docker_network_name is defined and docker_network_name | length > 0 }}"
-
-- name: Create Docker network if it doesn't exist
-  docker_network:
-    name: "{{ docker_network_name }}"
-    state: present
-  when: use_docker_network | bool
-
-- name: Check if PostgreSQL container exists
+- name: Check if PostgreSQL container is running
   docker_container_info:
     name: postgres
   register: postgres_container_info
 
-- name: Check if PostgreSQL container is in the correct network
-  command: docker network inspect {{ docker_network_name }}
-  register: network_inspect
-  changed_when: false
-  failed_when: false
-  when: use_docker_network | bool and postgres_container_info.exists
-
-- name: Set fact for network status
-  set_fact:
-    postgres_in_network: "{{ network_inspect.stdout | from_json | json_query('[0].Containers[*].Name') | select('search', 'postgres') | list | length > 0 }}"
-  when: use_docker_network | bool and postgres_container_info.exists
-
-- name: Remove existing PostgreSQL container if not in correct state or network
-  docker_container:
-    name: postgres
-    state: absent
-  when: >
-    postgres_container_info.exists and
-    (postgres_container_info.container.State.Status != 'running' or
-    (use_docker_network | bool and not postgres_in_network | default(false)))
+- name: Check if PostgreSQL data directory exists
+  stat:
+    path: "{{ postgres_data_dir }}"
+  register: postgres_data_dir_stat
 
 - name: Create PostgreSQL data directory
   file:
     path: "{{ postgres_data_dir }}"
     state: directory
     mode: '0755'
-  when: not postgres_container_info.exists or postgres_container_info.container.State.Status != 'running'
+  when: not postgres_data_dir_stat.stat.exists
 
 - name: Run PostgreSQL Docker container
   docker_container:
@@ -48,13 +22,13 @@
     image: "postgres:{{ postgres_version }}"
     state: started
     restart_policy: always
-    ports:
-      - "{{ postgres_port }}:5432"
+    network_mode: host
     env:
       POSTGRES_PASSWORD: "{{ postgres_password }}"
+    command: postgres -p {{ postgres_port }}
     volumes:
       - "{{ postgres_data_dir }}:/var/lib/postgresql/data"
-    networks: "{{ [{'name': docker_network_name}] if use_docker_network | bool else omit }}"
+  when: postgres_container_info.exists == false
 
 - name: Wait for PostgreSQL to be ready
   wait_for:
@@ -62,38 +36,4 @@
     port: "{{ postgres_port }}"
     delay: 10
     timeout: 60
-
-- name: Check PostgreSQL connection
-  command: >
-    docker exec postgres psql -U postgres -c "SELECT 1"
-  register: postgres_check
-  changed_when: false
-  failed_when: postgres_check.rc != 0
-  retries: 5
-  delay: 10
-  until: postgres_check.rc == 0
-
-- name: Verify PostgreSQL container is in the correct network
-  command: docker network inspect {{ docker_network_name }}
-  register: network_verify
-  changed_when: false
-  failed_when: false
-  when: use_docker_network | bool
-
-- name: Check if postgres is in the network
-  set_fact:
-    postgres_in_network: >-
-      {{ (network_verify.stdout | from_json | first).Containers.values() | map(attribute='Name') | list | select('search', 'postgres') | list | length > 0 }}
-  when: use_docker_network | bool and network_verify.stdout is defined and network_verify.stdout | length > 0
-
-- name: Debug network information
-  debug:
-    msg:
-      - "Network verify stdout: {{ network_verify.stdout | default('N/A') }}"
-      - "Postgres in network: {{ postgres_in_network | default('N/A') }}"
-  when: use_docker_network | bool
-
-- name: Fail if postgres is not in the network
-  fail:
-    msg: "PostgreSQL container is not connected to the specified network"
-  when: use_docker_network | bool and not postgres_in_network | default(false)
+  when: postgres_container_info.exists == false

@@ -3,15 +3,14 @@
   hosts: dev_web_servers
   become: yes
   vars:
-    ansible_user: "{{ ansible_ssh_user }}"
-    ansible_user_uid: "1000"
-    ansible_user_gid: "1000"
     postgres_password: "{{ vault_postgres_password | default('password') }}"
     postgres_data_dir: "/var/lib/postgresql/data"
     postgres_version: "16"
     postgres_port: "5432"
-    docker_network_name: "app_network"
     dragonfly_port: "6379"
+    ansible_user: "{{ ansible_ssh_user }}"
+    ansible_user_uid: "1000"
+    ansible_user_gid: "1000"
     github_repo_url: "{{ vault_github_repo_url }}"
     rails_master_key: "{{ vault_rails_master_key }}"
     rails_env: "development"
@@ -25,10 +24,10 @@
     - role: firewall
       vars:
         firewall_http_port: "{{ nginx_port }}"
+    - role: info
     - role: docker
-    - role: docker_network
     - role: postgres
-    - role: dragonfly
+    - role: dragonflydb
     - role: template7pg_docker
 
   tasks:

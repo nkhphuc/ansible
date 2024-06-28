@@ -1,31 +1,8 @@
 ---
-- name: Check if docker_network_name is defined
-  set_fact:
-    use_docker_network: "{{ docker_network_name is defined and docker_network_name | length > 0 }}"
-
-- name: Check if template7pg container exists
-  docker_container_info:
-    name: template7pg
-  register: template7pg_container_info
-
-- name: Check if template7pg container is in the correct network
-  docker_network:
-    name: "{{ docker_network_name }}"
-    connected:
-      - template7pg
-  register: template7pg_network_check
-  ignore_errors: yes
-  when:
-    - template7pg_container_info.exists
-    - use_docker_network | bool
-
-- name: Remove existing template7pg container if not in correct state
-  docker_container:
-    name: template7pg
-    state: absent
-  when: >
-    (template7pg_container_info.exists and template7pg_container_info.container.State.Status != 'running') or
-    (template7pg_container_info.exists and template7pg_network_check is failed)
+- name: Check if template7pg directory exists
+  stat:
+    path: "{{ template7pg_data_dir }}"
+  register: template7pg_dir
 
 - name: Create directory on host for template7pg files
   file:
@@ -34,14 +11,14 @@
     mode: '0755'
     owner: '1000'
     group: '1000'
-  when: not template7pg_container_info.exists or template7pg_container_info.container.State.Status != 'running' or template7pg_network_check is failed
+  when: not template7pg_dir.stat.exists
 
-- name: Copy files from image to host (if not already present)
+- name: Copy files from image to host
   command: >
     docker run --rm -v {{ template7pg_data_dir }}:/backup nkhphuc/template7pg:latest
-    bash -c "if [ -z \"$(ls -A /backup)\" ]; then cp -r /rails/. /backup; fi"
+    bash -c "cp -r /rails/. /backup"
   changed_when: false
-  when: not template7pg_container_info.exists or template7pg_container_info.container.State.Status != 'running' or template7pg_network_check is failed
+  when: not template7pg_dir.stat.exists
 
 - name: Set permissions on copied files
   file:
@@ -50,7 +27,7 @@
     group: '1000'
     mode: '0755'
     recurse: yes
-  when: not template7pg_container_info.exists or template7pg_container_info.container.State.Status != 'running' or template7pg_network_check is failed
+  when: not template7pg_dir.stat.exists
 
 - name: Run template7pg Docker container
   docker_container:
@@ -65,26 +42,7 @@
     env:
       RAILS_MASTER_KEY: "{{ rails_master_key }}"
       RAILS_ENV: "{{ rails_env }}"
-      REDIS_URL_DEVELOPMENT: "{{ redis_url_development }}"
-      DEV_DATABASE_HOST: "{{ dev_database_host }}"
-    networks: "{{ [{'name': docker_network_name}] if use_docker_network | bool else omit }}"
+      REDIS_URL_DEVELOPMENT: "redis://{{ hostvars['rails_dev_server_1_pu']['ansible_host'] }}:6379"
+      DEV_DATABASE_HOST: "{{ hostvars['rails_dev_server_1_pu']['ansible_host'] }}"
     volumes:
       - "{{ template7pg_data_dir }}:/rails"
-
-- name: Wait for template7pg to be ready
-  wait_for:
-    host: localhost
-    port: "{{ template7pg_port }}"
-    delay: 10
-    timeout: 60
-  when: not template7pg_container_info.exists or template7pg_container_info.container.State.Status != 'running'
-
-- name: Check template7pg connection
-  uri:
-    url: "http://localhost:{{ template7pg_port }}"
-    method: GET
-  register: template7pg_check
-  retries: 5
-  delay: 10
-  until: template7pg_check.status == 200
-  changed_when: false
