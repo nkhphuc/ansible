@@ -14,6 +14,7 @@
     connected:
       - dragonflydb
   register: dragonflydb_network_check
+  changed_when: false
   ignore_errors: yes
   when:
     - dragonflydb_container_info.exists
