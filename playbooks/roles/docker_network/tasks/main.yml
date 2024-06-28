@@ -13,37 +13,37 @@
 
 - name: Manage existing app_network
   block:
-    - name: Get containers connected to app_network
-      shell: docker network inspect {{ docker_network_name }} | grep '"Name":' | awk -F'"' '{print $4}'
+    - name: Get containers that should be connected to the network
+      set_fact:
+        expected_containers: "{{ groups['dev_web_servers'] | map('extract', hostvars, ['inventory_hostname']) | list }}"
+
+    - name: Get containers currently connected to app_network
+      shell: docker network inspect {{ docker_network_name }} | jq -r '.[0].Containers[].Name'
       register: connected_containers
-      ignore_errors: yes
+      changed_when: false
 
-    - name: Disconnect containers from app_network
-      command: docker network disconnect -f {{ docker_network_name }} {{ item }}
-      loop: "{{ connected_containers.stdout_lines | default([]) }}"
-      when: connected_containers.rc is defined and connected_containers.rc == 0
-      ignore_errors: yes
+    - name: Identify containers that need to be connected
+      set_fact:
+        containers_to_connect: "{{ expected_containers | difference(connected_containers.stdout_lines) }}"
 
-    - name: Remove existing app_network
-      docker_network:
-        name: "{{ docker_network_name }}"
-        state: absent
-      ignore_errors: yes
-
-    - name: Create Docker network
-      docker_network:
-        name: "{{ docker_network_name }}"
-        state: present
-
-    - name: Reconnect containers to the new network
+    - name: Connect missing containers to the network
       command: docker network connect {{ docker_network_name }} {{ item }}
-      loop: "{{ connected_containers.stdout_lines | default([]) }}"
-      when: connected_containers.rc is defined and connected_containers.rc == 0
-      ignore_errors: yes
+      loop: "{{ containers_to_connect }}"
+      when: containers_to_connect | length > 0
+
+    - name: Display info about newly connected containers
+      debug:
+        msg: "Connected containers: {{ containers_to_connect }}"
+      when: containers_to_connect | length > 0
+
+    - name: Display info when no new connections were needed
+      debug:
+        msg: "All expected containers are already connected to the network."
+      when: containers_to_connect | length == 0
 
   when: network_check.rc == 0
 
-- name: Verify network creation
+- name: Verify network status
   command: docker network inspect {{ docker_network_name }}
   register: network_inspect
 
