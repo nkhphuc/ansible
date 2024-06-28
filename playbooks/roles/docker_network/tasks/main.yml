@@ -1,15 +1,15 @@
 ---
 - name: Check if app_network exists
-  docker_network:
-    name: "{{ docker_network_name }}"
+  command: docker network inspect {{ docker_network_name }}
   register: network_check
   ignore_errors: yes
+  changed_when: false
 
 - name: Create Docker network if it doesn't exist
   docker_network:
     name: "{{ docker_network_name }}"
     state: present
-  when: not network_check.exists
+  when: network_check.rc != 0
 
 - name: Manage existing app_network
   block:
@@ -35,7 +35,13 @@
         name: "{{ docker_network_name }}"
         state: present
 
-  when: network_check.exists and (network_check is failed or network_check is changed)
+    - name: Reconnect containers to the new network
+      command: docker network connect {{ docker_network_name }} {{ item }}
+      loop: "{{ connected_containers.stdout_lines | default([]) }}"
+      when: connected_containers.rc is defined and connected_containers.rc == 0
+      ignore_errors: yes
+
+  when: network_check.rc == 0
 
 - name: Verify network creation
   command: docker network inspect {{ docker_network_name }}

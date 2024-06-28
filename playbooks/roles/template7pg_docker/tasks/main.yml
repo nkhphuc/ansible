@@ -64,6 +64,8 @@
       - "3000"
     env:
       RAILS_MASTER_KEY: "{{ rails_master_key }}"
+      RAILS_ENV: "{{ rails_env }}"
+      REDIS_URL_DEVELOPMENT: "{{ redis_url_development }}"
     networks: "{{ [{'name': docker_network_name}] if use_docker_network | bool else omit }}"
     volumes:
       - "{{ template7pg_data_dir }}:/rails"
