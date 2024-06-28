@@ -15,7 +15,7 @@ ansible-playbook -i inventory/dev playbooks/dev_web_servers.yml --ask-vault-pass
 
 <!-- Others -->
 <!-- Connect to server as ec2-user -->
-ssh -i /Users/hopee/downloads/rails-server.pem ec2-user@3.0.50.53
+ssh -i /Users/hopee/downloads/rails-server.pem ec2-user@54.254.240.2
 
 <!-- Docker -->
 <!-- Get UID and GID of user in the container -->
