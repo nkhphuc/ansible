@@ -15,7 +15,7 @@
     github_repo_url: "{{ vault_github_repo_url }}"
     rails_master_key: "{{ vault_rails_master_key }}"
     rails_env: "development"
-    redis_url_development: "redis://host.docker.internal:6379/1"
+    redis_url_development: "redis://172.17.0.1:6379/1"
     template7pg_port: "3000"
     template7pg_data_dir: "/home/ec2-user/template7pg_data"
     nginx_port: "80"
