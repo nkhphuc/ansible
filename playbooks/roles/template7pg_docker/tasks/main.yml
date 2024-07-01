@@ -42,6 +42,5 @@
       RAILS_ENV: "{{ rails_env }}"
       REDIS_URL_DEVELOPMENT: "redis://{{ ansible_private_ip }}:{{ dragonfly_port }}"
       DEV_DATABASE_HOST: "{{ ansible_private_ip }}"
-      DEV_DATABASE_PORT: "{{ postgres_port }}"
     volumes:
       - "{{ template7pg_data_dir }}:/rails"

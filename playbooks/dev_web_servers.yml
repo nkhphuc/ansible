@@ -22,12 +22,6 @@
     - role: firewall
       vars:
         firewall_http_port: "{{ nginx_port }}"
-    - role: firewall
-      vars:
-        firewall_http_port: "{{ dragonfly_port }}"
-    - role: firewall
-      vars:
-        firewall_http_port: "{{ postgres_port }}"
     - role: info
     - role: docker
     - role: postgres
