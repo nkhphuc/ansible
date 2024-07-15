@@ -25,3 +25,19 @@
     state: present
     regexp: '^deploy_user'
     line: 'deploy_user ALL=(ALL) NOPASSWD:ALL'
+
+- name: Create .ansible directory for deploy_user
+  ansible.builtin.file:
+    path: /home/deploy_user/.ansible
+    state: directory
+    owner: deploy_user
+    group: deploy_user
+    mode: '0755'
+
+- name: Create tmp directory inside .ansible
+  ansible.builtin.file:
+    path: /home/deploy_user/.ansible/tmp
+    state: directory
+    owner: deploy_user
+    group: deploy_user
+    mode: '0775'
