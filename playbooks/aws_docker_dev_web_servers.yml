@@ -3,12 +3,18 @@
   hosts: dev_web_servers
   become: yes
   vars:
-    rails_master_key: "{{ vault_rails_master_key }}"
     rails_env: "development"
     ansible_user: "{{ ansible_ssh_user }}"
     ansible_user_uid: "1000"
     ansible_user_gid: "1000"
-    github_repo_url: "{{ vault_github_repo_url }}"
+  pre_tasks:
+    - name: Include encrypted secrets
+      include_vars:
+        file: secrets.yml
+    - name: Set variables from secrets
+      set_fact:
+        rails_master_key: "{{ vault_rails_master_key }}"
+        github_repo_url: "{{ vault_github_repo_url }}"
   roles:
     - role: aws_firewall
       vars:
@@ -16,17 +22,17 @@
     - role: info
     - role: aws_docker
       vars:
-        docker_user: "{{ ansible_ssh_user }}"
+        docker_user: "{{ ansible_user }}"
     - role: docker_postgres
       vars:
         postgres_password: "{{ vault_postgres_password | default('password') }}"
     - role: docker_dragonflydb
     - role: docker_template7pg
       vars:
-        template7pg_data_dir: "/home/ec2-user/template7pg_data"
+        template7pg_data_dir: "/home/{{ ansible_user }}/template7pg_data"
         template7pg_port: "3000"
 
-  tasks:
+  # tasks:
     # - name: Get list of all containers
     #   docker_host_info:
     #     containers: yes
