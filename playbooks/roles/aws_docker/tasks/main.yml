@@ -72,20 +72,20 @@
         extra_args: --user
         executable: pip3
       become: yes
-      become_user: ec2-user
+      become_user: "{{ docker_user }}"
 
-    - name: Add ec2-user to docker group
+    - name: Add {{ docker_user }} to docker group
       user:
-        name: ec2-user
+        name: "{{ docker_user }}"
         groups: docker
         append: yes
 
     - name: Ensure local bin is in PATH
       lineinfile:
-        dest: /home/ec2-user/.bashrc
+        dest: "/home/{{ docker_user }}/.bashrc"
         line: 'export PATH=$PATH:$HOME/.local/bin'
         state: present
-      become_user: ec2-user
+      become_user: "{{ docker_user }}"
 
   when: docker_check.rc != 0
 
@@ -112,7 +112,7 @@
     - docker_login_result is failed
 
 - name: Reload bash profile
-  shell: source /home/ec2-user/.bashrc
+  shell: "source /home/{{ docker_user }}/.bashrc"
   args:
     executable: /bin/bash
-  become_user: ec2-user
+  become_user: "{{ docker_user }}"

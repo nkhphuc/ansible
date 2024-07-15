@@ -13,36 +13,32 @@
     - debug:
         var: python_version.stdout
 
-    - name: Ensure dnf-plugins-core is installed
-      dnf:
-        name: dnf-plugins-core
-        state: present
-
-    - name: Update dnf cache
-      dnf:
+    - name: Update apt cache
+      apt:
         update_cache: yes
 
     - name: Install required packages
-      dnf:
+      apt:
         name:
-          - dnf-utils
-          - device-mapper-persistent-data
-          - lvm2
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+        state: present
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
         state: present
 
     - name: Add Docker repository
-      get_url:
-        url: https://download.docker.com/linux/centos/docker-ce.repo
-        dest: /etc/yum.repos.d/docker-ce.repo
-
-    - name: Modify repo file to use centos-8 instead of centos-$releasever
-      replace:
-        path: /etc/yum.repos.d/docker-ce.repo
-        regexp: '\$releasever'
-        replace: '8'
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+        state: present
 
     - name: Install Docker
-      dnf:
+      apt:
         name:
           - docker-ce
           - docker-ce-cli
@@ -62,7 +58,7 @@
       notify: restart docker
 
     - name: Install pip
-      dnf:
+      apt:
         name: python3-pip
         state: present
 
@@ -72,20 +68,20 @@
         extra_args: --user
         executable: pip3
       become: yes
-      become_user: ec2-user
+      become_user: "{{ docker_user }}"
 
-    - name: Add ec2-user to docker group
+    - name: Add {{ docker_user }} user to docker group
       user:
-        name: ec2-user
+        name: "{{ docker_user }}"
         groups: docker
         append: yes
 
     - name: Ensure local bin is in PATH
       lineinfile:
-        dest: /home/ec2-user/.bashrc
+        dest: "/home/{{ docker_user }}/.bashrc"
         line: 'export PATH=$PATH:$HOME/.local/bin'
         state: present
-      become_user: ec2-user
+      become_user: "{{ docker_user }}"
 
   when: docker_check.rc != 0
 
@@ -112,7 +108,7 @@
     - docker_login_result is failed
 
 - name: Reload bash profile
-  shell: source /home/ec2-user/.bashrc
+  shell: "source /home/{{ docker_user }}/.bashrc"
   args:
     executable: /bin/bash
-  become_user: ec2-user
+  become_user: "{{ docker_user }}"

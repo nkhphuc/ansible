@@ -24,6 +24,8 @@
         firewall_http_port: "{{ nginx_port }}"
     - role: info
     - role: aws_docker
+      vars:
+        docker_user: "{{ ansible_ssh_user }}"
     - role: postgres
     - role: dragonflydb
     - role: template7pg_docker
