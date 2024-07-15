@@ -15,7 +15,13 @@ ansible-playbook -i inventory/dev playbooks/aws_docker_dev_web_servers.yml --ask
 
 <!-- Others -->
 <!-- Connect to server as ec2-user -->
-ssh -i /Users/hopee/downloads/rails-server.pem ec2-user@54.255.238.42
+ssh -i /Users/hopee/downloads/rails-server.pem ec2-user@47.129.2.35
+
+<!-- Switch to the deploy_user user -->
+sudo su - deploy_user
+
+<!-- Or login as deploy_user -->
+ssh -i /Users/hopee/.ssh/hopee_mac_github_1.pub deploy_user@47.129.2.35
 
 <!-- Docker -->
 <!-- Get UID and GID of user in the container -->

@@ -1,4 +1,4 @@
-ansible_host: 54.255.238.42
-ansible_private_ip: 172.31.24.251
+ansible_host: 47.129.2.35
+ansible_private_ip: 172.31.42.30
 ansible_ssh_private_key_file: /Users/hopee/downloads/rails-server.pem
 deploy_user_key: /Users/hopee/.ssh/hopee_mac_github_1.pub
