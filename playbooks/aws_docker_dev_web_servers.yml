@@ -19,7 +19,7 @@
     nginx_port: "80"
 
   roles:
-    - role: firewall
+    - role: aws_firewall
       vars:
         firewall_http_port: "{{ nginx_port }}"
     - role: info
