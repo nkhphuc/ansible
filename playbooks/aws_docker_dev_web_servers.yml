@@ -2,9 +2,11 @@
 - name: Playbook to deploy and run nkhphuc/template7pg on aws
   hosts: aws_dev_web_servers
   become: yes
+  # remote_user: deploy_user
   vars:
     rails_env: "development"
     ansible_user: "{{ ansible_ssh_user }}"
+    # ansible_user: "deploy_user"
     ansible_user_uid: "1000"
     ansible_user_gid: "1000"
   pre_tasks:
