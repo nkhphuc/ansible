@@ -23,7 +23,7 @@
       vars:
         firewall_http_port: "{{ nginx_port }}"
     - role: info
-    - role: docker
+    - role: aws_docker
     - role: postgres
     - role: dragonflydb
     - role: template7pg_docker
