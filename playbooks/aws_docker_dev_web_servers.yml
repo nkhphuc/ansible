@@ -4,7 +4,6 @@
   become: yes
   vars:
     postgres_password: "{{ vault_postgres_password | default('password') }}"
-    dragonfly_port: "6379"
     template7pg_data_dir: "/home/ec2-user/template7pg_data"
     template7pg_port: "3000"
     rails_master_key: "{{ vault_rails_master_key }}"
@@ -26,7 +25,7 @@
     - role: docker_postgres
       vars:
         postgres_password: "{{ vault_postgres_password | default('password') }}"
-    - role: dragonflydb
+    - role: docker_dragonflydb
     - role: template7pg_docker
 
   tasks:
