@@ -1,6 +1,6 @@
 ---
-- name: Playbook to deploy and run nkhphuc/template7pg
-  hosts: dev_web_servers
+- name: Playbook to deploy and run nkhphuc/template7pg on aws
+  hosts: aws_dev_web_servers
   become: yes
   vars:
     rails_env: "development"

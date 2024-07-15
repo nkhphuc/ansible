@@ -1,5 +1,6 @@
-[dev_web_servers]
-rails_dev_server_1_pu
+[aws_dev_web_servers]
+aws_dev_server_1
 
-[dev_network:children]
-dev_web_servers
+[aws_dev_network:children]
+aws_dev_web_servers
+
