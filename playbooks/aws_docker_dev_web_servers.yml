@@ -3,21 +3,16 @@
   hosts: dev_web_servers
   become: yes
   vars:
-    postgres_password: "{{ vault_postgres_password | default('password') }}"
-    template7pg_data_dir: "/home/ec2-user/template7pg_data"
-    template7pg_port: "3000"
     rails_master_key: "{{ vault_rails_master_key }}"
     rails_env: "development"
     ansible_user: "{{ ansible_ssh_user }}"
     ansible_user_uid: "1000"
     ansible_user_gid: "1000"
     github_repo_url: "{{ vault_github_repo_url }}"
-    nginx_port: "80"
-
   roles:
     - role: aws_firewall
       vars:
-        firewall_http_port: "{{ nginx_port }}"
+        firewall_http_port: "80"
     - role: info
     - role: aws_docker
       vars:
@@ -26,7 +21,10 @@
       vars:
         postgres_password: "{{ vault_postgres_password | default('password') }}"
     - role: docker_dragonflydb
-    - role: template7pg_docker
+    - role: docker_template7pg
+      vars:
+        template7pg_data_dir: "/home/ec2-user/template7pg_data"
+        template7pg_port: "3000"
 
   tasks:
     # - name: Get list of all containers
