@@ -1,0 +1,5 @@
+github_repo_branch: "main"
+project_directory: "/home/{{ ansible_user }}/template7pg"
+app_port: 3000
+rails_env: "{{ lookup('env', 'RAILS_ENV') | default('development', true) }}"
+# env_file_path: "/path/to/your/.env"  # optional
