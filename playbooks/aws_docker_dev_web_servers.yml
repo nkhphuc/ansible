@@ -4,9 +4,6 @@
   become: yes
   vars:
     postgres_password: "{{ vault_postgres_password | default('password') }}"
-    postgres_data_dir: "/var/lib/postgresql/data"
-    postgres_version: "16"
-    postgres_port: "5432"
     dragonfly_port: "6379"
     template7pg_data_dir: "/home/ec2-user/template7pg_data"
     template7pg_port: "3000"
@@ -26,7 +23,9 @@
     - role: aws_docker
       vars:
         docker_user: "{{ ansible_ssh_user }}"
-    - role: postgres
+    - role: docker_postgres
+      vars:
+        postgres_password: "{{ vault_postgres_password | default('password') }}"
     - role: dragonflydb
     - role: template7pg_docker
 
