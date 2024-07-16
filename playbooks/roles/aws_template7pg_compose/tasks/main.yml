@@ -87,7 +87,7 @@
 - name: Install Docker Compose if not present
   block:
     - name: Install Docker Compose
-      apt:
+      dnf:
         name: docker-compose
         state: present
       become: yes
