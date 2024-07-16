@@ -20,7 +20,7 @@
     - role: firewall
       vars:
         firewall_http_port: "80"
-    - role: aws_docker
+    - role: docker
       vars:
         docker_user: "{{ ansible_user }}"
     - role: docker_postgres
