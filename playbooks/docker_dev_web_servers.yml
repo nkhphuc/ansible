@@ -1,5 +1,5 @@
 ---
-- name: Playbook to deploy and run nkhphuc/template7pg using docker
+- name: Playbook to deploy and run nkhphuc/template7pg using docker in dev environment
   hosts: aws_dev_web_servers
   become: yes
   remote_user: "{{ deploy_user }}"
@@ -27,10 +27,13 @@
       vars:
         postgres_password: "{{ vault_postgres_password | default('password') }}"
     - role: docker_dragonflydb
+
+    # The following role is commented out because it is not recommended for use. It has several downsides: when used with Ansible, it will bypass docker-entrypoint. It uses a 3rd party service (Docker Hub) that requires additional setup and fees. Also, it is not versatile when it comes to deploying different versions or environments of the app.
     # - role: docker_template7pg
     #   vars:
     #     template7pg_data_dir: "/home/{{ ansible_user }}/template7pg_data"
     #     template7pg_port: "3000"
+
     - role: template7pg_compose
       vars:
         ansible_user_uid: "1000"
