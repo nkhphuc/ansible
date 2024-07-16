@@ -4,24 +4,24 @@
 ansible-inventory --list -i inventory/dev
 
 <!-- Run playbook -->
-<!-- Create deploy user, add SSH keys, create ansible directory -->
-ansible-playbook -i inventory/dev playbooks/create_deploy_user.yml
-
 <!-- Test by ping and print messages -->
 ansible-playbook -i inventory/dev playbooks/test_connections.yml
+
+<!-- Create deploy user, add SSH keys, create ansible directory -->
+ansible-playbook -i inventory/dev playbooks/create_deploy_user.yml
 
 <!-- Install Postgresql, DragonflyDB, Project and Nginx using Docker -->
 ansible-playbook -i inventory/dev playbooks/aws_docker_dev_web_servers.yml --ask-vault-pass
 
 <!-- Others -->
 <!-- Connect to server as ec2-user -->
-ssh -i /Users/hopee/downloads/rails-server.pem ec2-user@47.129.2.35
+ssh -i /Users/hopee/downloads/rails-server.pem ec2-user@13.212.83.87
 
 <!-- Switch to the deploy_user user -->
 sudo su - deploy_user
 
 <!-- Or login as deploy_user -->
-ssh -i /Users/hopee/.ssh/hopee_mac_github_1.pub deploy_user@47.129.2.35
+ssh -i /Users/hopee/.ssh/hopee_mac_github_1.pub deploy_user@13.212.83.87
 
 <!-- Docker -->
 <!-- Get UID and GID of user in the container -->

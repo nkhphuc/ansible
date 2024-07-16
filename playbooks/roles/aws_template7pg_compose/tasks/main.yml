@@ -5,6 +5,17 @@
     state: present
   become: yes
 
+- name: Set Git user configuration
+  ansible.builtin.git_config:
+    name: "{{ item.name }}"
+    scope: global
+    value: "{{ item.value }}"
+  loop:
+    - { name: 'user.name', value: 'nkhphuc' }
+    - { name: 'user.email', value: 'nkhphuc@gmail.com' }
+  become: yes
+  become_user: "{{ ansible_user }}"
+
 - name: Check GitHub connectivity
   ansible.builtin.uri:
     url: https://github.com
@@ -29,6 +40,8 @@
     cmd: git rev-parse HEAD
   args:
     chdir: "{{ project_directory }}"
+  become: yes
+  become_user: "{{ ansible_user }}"
   register: local_head
   changed_when: false
   when: git_repo_stat.stat.exists
@@ -45,12 +58,16 @@
          (remote_head.stdout.split()[0] != local_head.stdout) or
          docker_running.stdout == '' }}
 
-- name: Clone the GitHub repository
+- name: Clone/update the GitHub repository
   ansible.builtin.git:
     repo: "{{ github_repo_url }}"
     version: "{{ github_repo_branch }}"
     dest: "{{ project_directory }}"
+    update: yes
     force: yes
+    depth: 1
+  become: yes
+  become_user: "{{ ansible_user }}"
   when: update_needed
   async: 120
   poll: 10
@@ -95,25 +112,36 @@
       - "docker-compose.yml"
       - "{{ docker_compose_env_file }}"
 
-- name: Change ownership of project directory
+- name: Set full permissions on project directory
   ansible.builtin.file:
     path: "{{ project_directory }}"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
+    mode: '0777'
     recurse: yes
   become: yes
   when: update_needed
 
-- name: Set necessary permissions on specific directories
+- name: Ensure all necessary directories exist with correct permissions
   ansible.builtin.file:
-    path: "{{ item }}"
-    mode: '0775'
-    recurse: yes
-  become: yes
+    path: "{{ project_directory }}/{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0777'
   loop:
-    - "{{ project_directory }}/tmp"
-    - "{{ project_directory }}/log"
-    - "{{ project_directory }}/public"
+    - log
+    - tmp
+    - public
+  when: update_needed
+
+- name: Ensure development.log exists and is writable
+  ansible.builtin.file:
+    path: "{{ project_directory }}/log/development.log"
+    state: touch
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0666'
   when: update_needed
 
 - name: Set base environment variables
@@ -136,11 +164,12 @@
   set_fact:
     combined_env: "{{ base_env | combine(env_specific_vars[rails_env] | default({})) }}"
 
-- name: Run Docker Compose
+- name: Start Docker Compose services
   community.docker.docker_compose_v2:
     project_src: "{{ project_directory }}"
     files: "{{ compose_files }}"
     state: present
+    recreate: always
   become: yes
   environment: "{{ combined_env }}"
   when: update_needed
@@ -158,8 +187,8 @@
     url: "http://localhost:{{ app_port }}"
     method: GET
   register: app_check
-  retries: 5
-  delay: 10
+  retries: 3
+  delay: 15
   until: app_check.status == 200
   changed_when: false
   when: update_needed

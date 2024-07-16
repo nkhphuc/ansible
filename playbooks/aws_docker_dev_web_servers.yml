@@ -7,8 +7,6 @@
     rails_env: "development"
     # ansible_user: "{{ ansible_ssh_user }}"
     ansible_user: "{{ deploy_user }}"
-    ansible_user_uid: "1000"
-    ansible_user_gid: "1000"
   pre_tasks:
     - name: Include encrypted secrets
       include_vars:
@@ -29,10 +27,14 @@
       vars:
         postgres_password: "{{ vault_postgres_password | default('password') }}"
     - role: docker_dragonflydb
-    - role: docker_template7pg
+    # - role: docker_template7pg
+    #   vars:
+    #     template7pg_data_dir: "/home/{{ ansible_user }}/template7pg_data"
+    #     template7pg_port: "3000"
+    - role: aws_template7pg_compose
       vars:
-        template7pg_data_dir: "/home/{{ ansible_user }}/template7pg_data"
-        template7pg_port: "3000"
+        ansible_user_uid: "1000"
+        ansible_user_gid: "1000"
 
   # tasks:
     # - name: Get list of all containers
