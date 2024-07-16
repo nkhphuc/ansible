@@ -27,6 +27,10 @@
       vars:
         postgres_password: "{{ vault_postgres_password | default('password') }}"
     - role: docker_dragonflydb
+    - role: docker_nginx
+      vars:
+        nginx_port: "80"
+        app_server_ip: "{{ ansible_private_ip }}"
 
     # The following role is commented out because it is not recommended for use. It has several downsides: when used with Ansible, it will bypass docker-entrypoint. It uses a 3rd party service (Docker Hub) that requires additional setup and fees. Also, it is not versatile when it comes to deploying different versions or environments of the app.
     # - role: docker_template7pg
@@ -38,128 +42,3 @@
       vars:
         ansible_user_uid: "1000"
         ansible_user_gid: "1000"
-
-  # tasks:
-    # - name: Get list of all containers
-    #   docker_host_info:
-    #     containers: yes
-    #   register: docker_info
-
-    # - name: Stop all running containers
-    #   docker_container:
-    #     name: "{{ item.Names[0] | regex_replace('^/', '') }}"
-    #     state: stopped
-    #   loop: "{{ docker_info.containers }}"
-    #   when: item.State == 'running'
-    #   ignore_errors: yes
-
-    # - name: Remove all containers
-    #   docker_container:
-    #     name: "{{ item.Names[0] | regex_replace('^/', '') }}"
-    #     state: absent
-    #   loop: "{{ docker_info.containers }}"
-    #   ignore_errors: yes
-
-    # - name: Create Nginx configuration file
-    #   template:
-    #     src: nginx.conf.j2
-    #     dest: /home/ec2-user/nginx.conf
-    #     owner: ec2-user
-    #     group: ec2-user
-    #     mode: '0644'
-
-    # - name: Run Nginx Docker container
-    #   docker_container:
-    #     name: nginx
-    #     image: nginx:latest
-    #     state: started
-    #     restart_policy: always
-    #     ports:
-    #       - "{{ nginx_port }}:80"
-    #     volumes:
-    #       - /home/ec2-user/nginx.conf:/etc/nginx/nginx.conf:ro
-    #     networks:
-    #       - name: app_network
-
-    # - name: List all running containers
-    #   command: docker ps
-    #   register: docker_ps_result
-
-    # - name: Display running containers
-    #   debug:
-    #     var: docker_ps_result.stdout_lines
-
-    # - name: Inspect Docker network
-    #   command: docker network inspect app_network
-    #   register: network_info
-
-    # - name: Display network info
-    #   debug:
-    #     var: network_info.stdout_lines
-
-    # - name: Test connection to Rails app from Nginx container
-    #   command: docker exec nginx curl http://template7pg:3000
-    #   register: curl_result
-    #   ignore_errors: yes
-
-    # - name: Display curl result
-    #   debug:
-    #     var: curl_result
-
-    # - name: Inspect Docker network
-    #   command: docker network inspect app_network
-    #   register: network_info
-
-    # - name: Display network info
-    #   debug:
-    #     var: network_info.stdout_lines
-
-    # - name: Ping template7pg from Nginx container
-    #   command: docker exec nginx ping -c 4 template7pg
-    #   register: ping_result
-    #   ignore_errors: yes
-
-    # - name: Display ping result
-    #   debug:
-    #     var: ping_result.stdout_lines
-
-    # - name: Curl template7pg from Nginx container
-    #   command: docker exec nginx curl -v http://template7pg:3000
-    #   register: curl_result
-    #   ignore_errors: yes
-
-    # - name: Display curl result
-    #   debug:
-    #     var: curl_result.stdout_lines
-
-    # - name: Check listening ports in template7pg
-    #   command: docker exec template7pg netstat -tuln
-    #   register: netstat_result
-
-    # - name: Display netstat result
-    #   debug:
-    #     var: netstat_result.stdout_lines
-
-    # - name: Check Nginx configuration
-    #   command: docker exec nginx cat /etc/nginx/nginx.conf
-    #   register: nginx_conf
-
-    # - name: Display Nginx configuration
-    #   debug:
-    #     var: nginx_conf.stdout_lines
-
-    # - name: Inspect Docker network
-    #   command: docker network inspect app_network
-    #   register: network_info
-
-    # - name: Display network info
-    #   debug:
-    #     var: network_info.stdout_lines
-
-    # - name: Remove stopped containers
-    #   docker_prune:
-    #     containers: yes
-
-    # - name: Remove unused images
-    #   docker_prune:
-    #     images: yes
