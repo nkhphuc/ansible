@@ -1,5 +1,5 @@
 ---
-- name: Playbook to deploy and run nkhphuc/template7pg on aws
+- name: Playbook to deploy and run nkhphuc/template7pg using docker
   hosts: aws_dev_web_servers
   become: yes
   remote_user: "{{ deploy_user }}"
