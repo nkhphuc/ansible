@@ -14,14 +14,15 @@ ansible-playbook -i inventory/dev playbooks/create_deploy_user.yml
 ansible-playbook -i inventory/dev playbooks/docker_dev_web_servers.yml --ask-vault-pass
 
 <!-- Others -->
-<!-- Connect to server as ec2-user -->
+<!-- Connect to server as ec2-user / ubuntu -->
 ssh -i /Users/hopee/downloads/rails-server.pem ec2-user@54.169.173.233
+ssh -i /Users/hopee/downloads/rails-server.pem ubuntu@54.251.72.12
 
 <!-- Switch to the deploy_user user -->
 sudo su - deploy_user
 
 <!-- Or login as deploy_user -->
-ssh -i /Users/hopee/.ssh/hopee_mac_github_1.pub deploy_user@54.169.173.233
+ssh -i /Users/hopee/.ssh/hopee_mac_github_1.pub deploy_user@54.251.72.12
 
 <!-- Docker -->
 <!-- Get UID and GID of user in the container -->

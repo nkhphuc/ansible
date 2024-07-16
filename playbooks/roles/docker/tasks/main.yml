@@ -97,7 +97,7 @@
             state: present
       when: ansible_distribution == "Ubuntu"
 
-    - name: Common tasks for both distributions
+    - name: Other tasks for both distributions
       block:
         - name: Ensure Docker service is running
           systemd:
@@ -111,13 +111,20 @@
             dest: /etc/docker/daemon.json
           notify: restart docker
 
-        - name: Install Docker Python module
+        - name: Install Docker Python module for Amazon Linux
           pip:
             name: docker
             extra_args: --user
             executable: pip3
           become: yes
           become_user: "{{ docker_user }}"
+          when: ansible_distribution == "Amazon"
+
+        - name: Install Docker Python module for Ubuntu
+          apt:
+            name: python3-docker
+            state: present
+          when: ansible_distribution == "Ubuntu"
 
         - name: Add {{ docker_user }} to docker group
           user:

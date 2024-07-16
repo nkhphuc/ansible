@@ -1,2 +1,3 @@
 ansible_ssh_user: ec2-user
+# ansible_ssh_user: ubuntu
 deploy_user: deploy_user
