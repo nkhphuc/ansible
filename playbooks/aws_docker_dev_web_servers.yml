@@ -31,7 +31,7 @@
     #   vars:
     #     template7pg_data_dir: "/home/{{ ansible_user }}/template7pg_data"
     #     template7pg_port: "3000"
-    - role: aws_template7pg_compose
+    - role: template7pg_compose
       vars:
         ansible_user_uid: "1000"
         ansible_user_gid: "1000"

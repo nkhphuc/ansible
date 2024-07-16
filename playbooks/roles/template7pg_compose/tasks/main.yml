@@ -86,12 +86,19 @@
 
 - name: Install Docker Compose if not present
   block:
-    - name: Install Docker Compose
+    - name: Install Docker Compose for Amazon Linux
       dnf:
         name: docker-compose
         state: present
-      become: yes
+      when: ansible_distribution == "Amazon"
+
+    - name: Install Docker Compose for Ubuntu
+      apt:
+        name: docker-compose-plugin
+        state: present
+      when: ansible_distribution == "Ubuntu"
   when: docker_compose_check.rc != 0
+  become: yes
 
 - name: Set environment-specific Docker Compose file
   set_fact:
