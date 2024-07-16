@@ -12,18 +12,18 @@
         state: started
         enabled: yes
 
-    - name: Check if port {{ firewall_http_port }} is already open
+    - name: Check if port {{ firewall_port }} is already open
       ansible.posix.firewalld:
-        port: "{{ firewall_http_port }}/tcp"
+        port: "{{ firewall_port }}/tcp"
         permanent: yes
         state: enabled
       check_mode: yes
       register: amazon_firewall_check
       changed_when: false
 
-    - name: Open port {{ firewall_http_port }} (HTTP) in firewalld if not already open
+    - name: Open port {{ firewall_port }} (HTTP) in firewalld if not already open
       ansible.posix.firewalld:
-        port: "{{ firewall_http_port }}/tcp"
+        port: "{{ firewall_port }}/tcp"
         permanent: yes
         state: enabled
         immediate: yes
@@ -41,29 +41,29 @@
       ansible.builtin.ufw:
         state: enabled
 
-    - name: Check if port {{ firewall_http_port }} is already open
+    - name: Check if port {{ firewall_port }} is already open
       ansible.builtin.ufw:
         rule: allow
-        port: "{{ firewall_http_port }}"
+        port: "{{ firewall_port }}"
         proto: tcp
       check_mode: yes
       register: ubuntu_firewall_check
       changed_when: false
 
-    - name: Open port {{ firewall_http_port }} (HTTP) in ufw if not already open
+    - name: Open port {{ firewall_port }} (HTTP) in ufw if not already open
       ansible.builtin.ufw:
         rule: allow
-        port: "{{ firewall_http_port }}"
+        port: "{{ firewall_port }}"
         proto: tcp
       when: ubuntu_firewall_check.changed
   when: ansible_distribution == "Ubuntu"
 
-- name: Check if port {{ firewall_http_port }} is listening
-  shell: netstat -tuln | grep :{{ firewall_http_port }}
+- name: Check if port {{ firewall_port }} is listening
+  shell: netstat -tuln | grep :{{ firewall_port }}
   register: port_check
   changed_when: false
   failed_when: false
 
-- name: Display port {{ firewall_http_port }} status
+- name: Display port {{ firewall_port }} status
   debug:
-    msg: "Port {{ firewall_http_port }} is {{ 'listening' if port_check.rc == 0 else 'not listening' }}"
+    msg: "Port {{ firewall_port }} is {{ 'listening' if port_check.rc == 0 else 'not listening' }}"

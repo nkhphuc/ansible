@@ -1,2 +1,2 @@
 ---
-firewall_http_port: 80
+firewall_port: "80"
