@@ -1,0 +1,69 @@
+---
+- name: Tasks for Amazon Linux
+  block:
+    - name: Ensure firewalld is installed
+      ansible.builtin.dnf:
+        name: firewalld
+        state: present
+
+    - name: Ensure firewalld is running and enabled
+      ansible.builtin.systemd:
+        name: firewalld
+        state: started
+        enabled: yes
+
+    - name: Check if port {{ firewall_http_port }} is already open
+      ansible.posix.firewalld:
+        port: "{{ firewall_http_port }}/tcp"
+        permanent: yes
+        state: enabled
+      check_mode: yes
+      register: amazon_firewall_check
+      changed_when: false
+
+    - name: Open port {{ firewall_http_port }} (HTTP) in firewalld if not already open
+      ansible.posix.firewalld:
+        port: "{{ firewall_http_port }}/tcp"
+        permanent: yes
+        state: enabled
+        immediate: yes
+      when: amazon_firewall_check.changed
+  when: ansible_distribution == "Amazon"
+
+- name: Tasks for Ubuntu
+  block:
+    - name: Ensure ufw is installed
+      ansible.builtin.apt:
+        name: ufw
+        state: present
+
+    - name: Ensure ufw is running and enabled
+      ansible.builtin.ufw:
+        state: enabled
+
+    - name: Check if port {{ firewall_http_port }} is already open
+      ansible.builtin.ufw:
+        rule: allow
+        port: "{{ firewall_http_port }}"
+        proto: tcp
+      check_mode: yes
+      register: ubuntu_firewall_check
+      changed_when: false
+
+    - name: Open port {{ firewall_http_port }} (HTTP) in ufw if not already open
+      ansible.builtin.ufw:
+        rule: allow
+        port: "{{ firewall_http_port }}"
+        proto: tcp
+      when: ubuntu_firewall_check.changed
+  when: ansible_distribution == "Ubuntu"
+
+- name: Check if port {{ firewall_http_port }} is listening
+  shell: netstat -tuln | grep :{{ firewall_http_port }}
+  register: port_check
+  changed_when: false
+  failed_when: false
+
+- name: Display port {{ firewall_http_port }} status
+  debug:
+    msg: "Port {{ firewall_http_port }} is {{ 'listening' if port_check.rc == 0 else 'not listening' }}"

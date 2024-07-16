@@ -16,10 +16,10 @@
         rails_master_key: "{{ vault_rails_master_key }}"
         github_repo_url: "{{ vault_github_repo_url }}"
   roles:
-    - role: aws_firewall
+    - role: info
+    - role: firewall
       vars:
         firewall_http_port: "80"
-    - role: info
     - role: aws_docker
       vars:
         docker_user: "{{ ansible_user }}"
