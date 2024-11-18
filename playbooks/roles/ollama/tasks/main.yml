@@ -26,13 +26,21 @@
       - "11434:11434"
     volumes:
       - "{{ ollama_data_dir | default('/home/' + ansible_user + '/ollama_data') }}:/root/.ollama"
+  when: ollama_container_info.exists == false
 
 - name: Wait for Ollama service to be ready
   wait_for:
     port: 11434
     timeout: 30
 
-- name: Pull llama3.2 model
+- name: Check if llama3.2 model exists
+  docker_container_exec:
+    container: ollama
+    command: ollama list
+  register: model_check
+
+- name: Run llama3.2 model
   docker_container_exec:
     container: ollama
     command: ollama run llama3.2
+  when: "'llama3.2' not in model_check.stdout"
