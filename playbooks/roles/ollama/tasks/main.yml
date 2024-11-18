@@ -1,0 +1,38 @@
+---
+- name: Check if Ollama container is running
+  docker_container_info:
+    name: ollama
+  register: ollama_container_info
+
+- name: Check if Ollama data directory exists
+  stat:
+    path: "{{ ollama_data_dir | default('/home/' + ansible_user + '/ollama_data') }}"
+  register: ollama_data_dir_stat
+
+- name: Create Ollama data directory
+  file:
+    path: "{{ ollama_data_dir | default('/home/' + ansible_user + '/ollama_data') }}"
+    state: directory
+    mode: '0755'
+  when: not ollama_data_dir_stat.stat.exists
+
+- name: Run Ollama Docker container
+  docker_container:
+    name: ollama
+    image: "ollama/ollama:latest"
+    state: started
+    restart_policy: always
+    ports:
+      - "11434:11434"
+    volumes:
+      - "{{ ollama_data_dir | default('/home/' + ansible_user + '/ollama_data') }}:/root/.ollama"
+
+- name: Wait for Ollama service to be ready
+  wait_for:
+    port: 11434
+    timeout: 30
+
+- name: Pull llama3.2 model
+  docker_container_exec:
+    container: ollama
+    command: ollama run llama3.2
