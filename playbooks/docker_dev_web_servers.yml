@@ -25,11 +25,16 @@
       vars:
         postgres_password: "{{ vault_postgres_password | default('password') }}"
     - role: docker_dragonflydb
-    - role: docker_nginx
-      vars:
-        nginx_port: "80"
-        app_server_ip: "{{ ansible_private_ip }}"
+    # - role: docker_nginx
+    #   vars:
+    #     nginx_port: "80"
+    #     app_server_ip: "{{ ansible_private_ip }}"
+
     # not tested yet
+    - role: docker_caddy
+      vars:
+        caddy_port: "80"
+        app_server_ip: "{{ ansible_private_ip }}"
     - role: docker_ollama
       vars:
         ollama_data_dir: "/home/{{ ansible_user }}/ollama_data"

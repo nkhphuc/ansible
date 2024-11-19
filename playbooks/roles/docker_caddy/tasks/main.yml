@@ -1,0 +1,22 @@
+---
+- name: Create Caddy configuration file
+  template:
+    src: Caddyfile.j2
+    dest: /home/{{ ansible_user }}/Caddyfile
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'
+
+- name: Run Caddy Docker container
+  docker_container:
+    name: caddy
+    image: caddy:latest
+    state: started
+    restart_policy: always
+    ports:
+      - "{{ caddy_port }}:80"
+      - "443:443"
+    volumes:
+      - /home/{{ ansible_user }}/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config

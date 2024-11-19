@@ -1,5 +1,0 @@
-[stg_web_servers]
-rails_stg_server_1_pu
-
-[stg_network:children]
-stg_web_servers
