@@ -7,6 +7,8 @@
   vars:
     rails_env: "production"
     ansible_user: "{{ deploy_user }}"
+    docker_user: "{{ ansible_user }}"
+    app_server_ip: "{{ ansible_private_ip }}"
   pre_tasks:
     - name: Include encrypted secrets
       include_vars:
@@ -17,23 +19,15 @@
         github_repo_url: "{{ vault_github_repo_url }}"
         postgres_user: "{{ vault_postgres_user }}"
         postgres_password: "{{ vault_postgres_pro_password }}"
-        # domain_name: "{{ vault_domain_name }}"
+        domain_name: "{{ vault_domain_name }}"
+        admin_email: "{{ vault_admin_email }}"
   roles:
     - role: info
     - role: docker
-      vars:
-        docker_user: "{{ ansible_user }}"
     - role: docker_postgres
     - role: docker_dragonflydb
     # - role: docker_nginx
-    #   vars:
-    #     app_server_ip: "{{ ansible_private_ip }}"
     - role: docker_caddy
-      vars:
-        caddy_port: "80"
-        app_server_ip: "{{ ansible_private_ip }}"
-        domain_name: "{{ vault_domain_name }}"
-        admin_email: "{{ vault_admin_email }}"
     - role: template7pg_compose
       vars:
         ansible_user_uid: "1000"

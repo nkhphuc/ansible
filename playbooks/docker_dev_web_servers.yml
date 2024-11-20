@@ -8,6 +8,8 @@
     rails_env: "development"
     # ansible_user: "{{ ansible_ssh_user }}"
     ansible_user: "{{ deploy_user }}"
+    docker_user: "{{ ansible_user }}"
+    app_server_ip: "{{ ansible_private_ip }}"
   pre_tasks:
     - name: Include encrypted secrets
       include_vars:
@@ -19,21 +21,12 @@
   roles:
     - role: info
     - role: docker
-      vars:
-        docker_user: "{{ ansible_user }}"
     - role: docker_postgres
       vars:
         postgres_password: "{{ vault_postgres_dev_password | default('password') }}"
     - role: docker_dragonflydb
     # - role: docker_nginx
-    #   vars:
-    #     app_server_ip: "{{ ansible_private_ip }}"
-
-    # not tested yet
     - role: docker_caddy
-      vars:
-        caddy_port: "80"
-        app_server_ip: "{{ ansible_private_ip }}"
     - role: docker_ollama
       vars:
         ollama_data_dir: "/home/{{ ansible_user }}/ollama_data"
