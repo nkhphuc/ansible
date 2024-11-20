@@ -6,7 +6,6 @@
   gather_facts: yes
   vars:
     rails_env: "development"
-    # ansible_user: "{{ ansible_ssh_user }}"
     ansible_user: "{{ deploy_user }}"
     docker_user: "{{ deploy_user }}"
     app_server_ip: "{{ ansible_private_ip }}"
@@ -20,6 +19,7 @@
       set_fact:
         rails_master_key: "{{ vault_rails_master_key }}"
         github_repo_url: "{{ vault_github_repo_url }}"
+        postgres_user: "{{ vault_postgres_dev_user | default('postgres') }}"
         postgres_password: "{{ vault_postgres_dev_password | default('password') }}"
   roles:
     - role: info
