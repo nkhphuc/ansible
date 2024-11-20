@@ -166,7 +166,11 @@
         REDIS_URL: "{{ redis_url | default('') }}"
         OLLAMA_CHAT_URL: "{{ ollama_chat_url | default('') }}"
       production:
-        REDIS_URL_PRODUCTION: "{{ redis_url_production | default('') }}"
+        PRO_DATABASE_HOST: "{{ pro_database_host | default('') }}"
+        PRO_DATABASE_USERNAME: "{{ pro_database_username | default('') }}"
+        PRO_DATABASE_PASSWORD: "{{ pro_database_password | default('') }}"
+        REDIS_URL: "{{ redis_url | default('') }}"
+        OLLAMA_CHAT_URL: "{{ ollama_chat_url | default('') }}"
 
 - name: Combine environment variables
   set_fact:

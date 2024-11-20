@@ -11,7 +11,9 @@
     app_server_ip: "{{ ansible_private_ip }}"
     ansible_user_uid: "1000"
     ansible_user_gid: "1000"
-    redis_url_production: "redis://{{ ansible_private_ip }}:6379/1"
+    pro_database_host: "{{ ansible_private_ip }}"
+    redis_url: "redis://{{ ansible_private_ip }}:6379/1"
+    ollama_chat_url: "http://{{ ansible_private_ip }}:11434/api/chat"
   pre_tasks:
     - name: Include encrypted secrets
       include_vars:
@@ -24,6 +26,8 @@
         postgres_password: "{{ vault_postgres_pro_password }}"
         domain_name: "{{ vault_domain_name }}"
         admin_email: "{{ vault_admin_email }}"
+        pro_database_username: "{{ vault_postgres_pro_user }}"
+        pro_database_password: "{{ vault_postgres_pro_password }}"
   roles:
     - role: info
     - role: docker
