@@ -164,7 +164,7 @@
         DEV_DATABASE_USERNAME: "{{ dev_database_username | default('') }}"
         DEV_DATABASE_PASSWORD: "{{ dev_database_password | default('') }}"
         REDIS_URL: "{{ redis_url | default('') }}"
-        OLLAMA_URL: "{{ ollama_url | default('') }}"
+        OLLAMA_CHAT_URL: "{{ ollama_chat_url | default('') }}"
       production:
         REDIS_URL_PRODUCTION: "{{ redis_url_production | default('') }}"
 

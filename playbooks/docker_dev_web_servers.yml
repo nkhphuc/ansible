@@ -13,7 +13,7 @@
     ansible_user_gid: "1000"
     # dev_database_host: "{{ ansible_private_ip }}"
     # redis_url: "redis://{{ ansible_private_ip }}:6379/1"
-    # ollama_url: "http://{{ ansible_private_ip }}:11434/api/chat"
+    # ollama_chat_url: "http://{{ ansible_private_ip }}:11434/api/chat"
   pre_tasks:
     - name: Include encrypted secrets
       include_vars:
