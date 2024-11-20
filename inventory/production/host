@@ -1,5 +1,5 @@
-[pro_web_servers]
-rails_pro_server_1_pu
+[aws_pro_web_servers]
+aws_pro_server_1
 
-[pro_network:children]
-pro_web_servers
+[aws_pro_network:children]
+aws_pro_web_servers
