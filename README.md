@@ -9,9 +9,11 @@ ansible-inventory --list -i inventory/prod
 ## Run playbook cmds
 <!-- Test by ping and print messages -->
 ansible-playbook -i inventory/dev playbooks/test_connections.yml
+ansible-playbook -i inventory/prod playbooks/test_connections.yml
 
 <!-- Create deploy user, add SSH keys, create ansible directory -->
 ansible-playbook -i inventory/dev playbooks/create_deploy_user.yml
+ansible-playbook -i inventory/prod playbooks/create_deploy_user.yml
 
 <!-- Install Postgresql, DragonflyDB, Project and Nginx using Docker -->
 ansible-playbook -i inventory/dev playbooks/docker_dev_web_servers.yml --ask-vault-pass

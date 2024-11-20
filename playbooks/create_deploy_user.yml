@@ -2,7 +2,7 @@
 - name: Create a deploy user
   # hosts: dev_web_servers, stg_web_servers, pro_web_servers
   # hosts: dev_web_servers:stg_web_servers:pro_web_servers
-  hosts: aws_dev_web_servers
+  hosts: aws_dev_web_servers:aws_prod_web_servers
   become: yes
   roles:
     - deploy_user
