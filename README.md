@@ -19,7 +19,7 @@ ansible-playbook -i inventory/prod playbooks/create_deploy_user.yml
 ansible-playbook -i inventory/dev playbooks/docker_dev_web_servers.yml --ask-vault-pass
 ansible-playbook -i inventory/prod playbooks/docker_prod_web_servers.yml --ask-vault-pass
 
-## Other cmds
+## Connect cmds
 <!-- Connect to server as ec2-user / ubuntu -->
 ssh -i /Users/hopee/downloads/rails-server.pem ec2-user@54.169.173.233
 ssh -i /Users/hopee/downloads/rails-server.pem ubuntu@54.255.195.242
@@ -46,7 +46,7 @@ ansible-vault encrypt inventory/dev/group_vars/all/vault.yml
 <!-- Decrypt an existing file -->
 ansible-vault decrypt inventory/dev/group_vars/all/vault.yml
 
-## Docker
+## Docker cmds
 <!-- Check running Docker containers -->
 docker ps
 
@@ -57,6 +57,7 @@ docker logs template7pg-web-1
 docker exec -it template7pg-web-1 /bin/bash
 
 <!-- Run a command in a running container -->
+docker exec -it template7pg-web-1 bundle exec rails db:create
 docker exec -it template7pg-web-1 bundle exec rails db:migrate
 
 <!-- Get UID and GID of user in the container -->
@@ -70,6 +71,10 @@ docker stop $(docker ps -aq)
 docker rm $(docker ps -aq)
 docker network prune -f
 
-## Psql
+## Psql cmds
 <!-- Connect to postgres database -->
 psql -h 54.255.195.242 -U postgres
+
+## File management cmds
+<!-- Delete a directory -->
+sudo rm -rf ollama_data
