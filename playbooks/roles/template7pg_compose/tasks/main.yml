@@ -159,7 +159,12 @@
 - name: Set environment-specific variables
   set_fact:
     env_specific_vars:
-      development: {}
+      development:
+        DEV_DATABASE_HOST: "{{ dev_database_host | default('') }}"
+        DEV_DATABASE_USERNAME: "{{ dev_database_username | default('') }}"
+        DEV_DATABASE_PASSWORD: "{{ dev_database_password | default('') }}"
+        REDIS_URL: "{{ redis_url | default('') }}"
+        OLLAMA_URL: "{{ ollama_url | default('') }}"
       production:
         REDIS_URL_PRODUCTION: "{{ redis_url_production | default('') }}"
 

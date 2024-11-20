@@ -11,6 +11,9 @@
     app_server_ip: "{{ ansible_private_ip }}"
     ansible_user_uid: "1000"
     ansible_user_gid: "1000"
+    # dev_database_host: "{{ ansible_private_ip }}"
+    # redis_url: "redis://{{ ansible_private_ip }}:6379/1"
+    # ollama_url: "http://{{ ansible_private_ip }}:11434/api/chat"
   pre_tasks:
     - name: Include encrypted secrets
       include_vars:
@@ -21,6 +24,8 @@
         github_repo_url: "{{ vault_github_repo_url }}"
         postgres_user: "{{ vault_postgres_dev_user | default('postgres') }}"
         postgres_password: "{{ vault_postgres_dev_password | default('password') }}"
+        dev_database_username: "{{ vault_postgres_dev_user | default('postgres') }}"
+        dev_database_password: "{{ vault_postgres_dev_password | default('password') }}"
   roles:
     - role: info
     - role: docker
