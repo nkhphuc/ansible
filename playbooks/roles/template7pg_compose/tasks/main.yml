@@ -105,8 +105,6 @@
     docker_compose_env_file: >-
       {%- if rails_env == 'development' -%}
         docker-compose.override.yml
-      {%- elif rails_env == 'staging' -%}
-        docker-compose.staging.yml
       {%- elif rails_env == 'production' -%}
         docker-compose.prod.yml
       {%- else -%}
@@ -142,9 +140,9 @@
     - public
   when: update_needed
 
-- name: Ensure development.log exists and is writable
+- name: Ensure Rails log file exists and is writable
   ansible.builtin.file:
-    path: "{{ project_directory }}/log/development.log"
+    path: "{{ project_directory }}/log/{{ rails_env }}.log"
     state: touch
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
@@ -162,8 +160,6 @@
   set_fact:
     env_specific_vars:
       development: {}
-      staging:
-        REDIS_URL_STAGING: "{{ redis_url_staging | default('') }}"
       production:
         REDIS_URL_PRODUCTION: "{{ redis_url_production | default('') }}"
 

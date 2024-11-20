@@ -9,6 +9,9 @@
     ansible_user: "{{ deploy_user }}"
     docker_user: "{{ deploy_user }}"
     app_server_ip: "{{ ansible_private_ip }}"
+    ansible_user_uid: "1000"
+    ansible_user_gid: "1000"
+    redis_url_production: "redis://{{ ansible_private_ip }}:6379/1"
   pre_tasks:
     - name: Include encrypted secrets
       include_vars:
@@ -30,6 +33,3 @@
     - role: docker_caddy
     - role: docker_ollama
     - role: template7pg_compose
-      vars:
-        ansible_user_uid: "1000"
-        ansible_user_gid: "1000"

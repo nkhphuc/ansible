@@ -10,6 +10,8 @@
     ansible_user: "{{ deploy_user }}"
     docker_user: "{{ deploy_user }}"
     app_server_ip: "{{ ansible_private_ip }}"
+    ansible_user_uid: "1000"
+    ansible_user_gid: "1000"
   pre_tasks:
     - name: Include encrypted secrets
       include_vars:
@@ -36,6 +38,3 @@
     #     template7pg_port: "3000"
 
     - role: template7pg_compose
-      vars:
-        ansible_user_uid: "1000"
-        ansible_user_gid: "1000"
