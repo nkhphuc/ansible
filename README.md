@@ -53,6 +53,9 @@ docker ps
 <!-- view container logs -->
 docker logs template7pg-web-1
 
+<!-- Enter a running container -->
+docker exec -it template7pg-web-1 /bin/bash
+
 <!-- Run a command in a running container -->
 docker exec -it template7pg-web-1 bundle exec rails db:migrate
 
