@@ -8,7 +8,7 @@
     rails_env: "development"
     # ansible_user: "{{ ansible_ssh_user }}"
     ansible_user: "{{ deploy_user }}"
-    docker_user: "{{ ansible_user }}"
+    docker_user: "{{ deploy_user }}"
     app_server_ip: "{{ ansible_private_ip }}"
   pre_tasks:
     - name: Include encrypted secrets
