@@ -28,8 +28,6 @@
     # - role: docker_nginx
     - role: docker_caddy
     - role: docker_ollama
-      vars:
-        ollama_data_dir: "/home/{{ ansible_user }}/ollama_data"
 
     # The following role is commented out because it is not recommended for use. It has several downsides: when used with Ansible, it will bypass docker-entrypoint. It uses a 3rd party service (Docker Hub) that requires additional setup and fees. Also, it is not versatile when it comes to deploying different versions or environments of the app.
     # - role: docker_template7pg

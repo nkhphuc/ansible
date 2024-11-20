@@ -28,6 +28,7 @@
     - role: docker_dragonflydb
     # - role: docker_nginx
     - role: docker_caddy
+    - role: docker_ollama
     - role: template7pg_compose
       vars:
         ansible_user_uid: "1000"

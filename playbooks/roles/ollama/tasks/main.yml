@@ -6,12 +6,12 @@
 
 - name: Check if Ollama data directory exists
   stat:
-    path: "{{ ollama_data_dir | default('/home/' + ansible_user + '/ollama_data') }}"
+    path: "{{ ollama_data_dir }}"
   register: ollama_data_dir_stat
 
 - name: Create Ollama data directory
   file:
-    path: "{{ ollama_data_dir | default('/home/' + ansible_user + '/ollama_data') }}"
+    path: "{{ ollama_data_dir }}"
     state: directory
     mode: '0755'
   when: not ollama_data_dir_stat.stat.exists
@@ -25,7 +25,7 @@
     ports:
       - "11434:11434"
     volumes:
-      - "{{ ollama_data_dir | default('/home/' + ansible_user + '/ollama_data') }}:/root/.ollama"
+      - "{{ ollama_data_dir }}:/root/.ollama"
   when: ollama_container_info.exists == false
 
 - name: Wait for Ollama service to be ready

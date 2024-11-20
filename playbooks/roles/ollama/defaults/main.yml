@@ -1,0 +1,2 @@
+---
+ollama_data_dir: "/home/{{ ansible_user }}/ollama_data"
