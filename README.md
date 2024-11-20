@@ -15,7 +15,7 @@ ansible-playbook -i inventory/prod playbooks/test_connections.yml
 ansible-playbook -i inventory/dev playbooks/create_deploy_user.yml
 ansible-playbook -i inventory/prod playbooks/create_deploy_user.yml
 
-<!-- Install Postgresql, DragonflyDB, Project and Nginx using Docker -->
+<!-- Install Postgresql, DragonflyDB, Project and Caddy using Docker -->
 ansible-playbook -i inventory/dev playbooks/docker_dev_web_servers.yml --ask-vault-pass
 ansible-playbook -i inventory/prod playbooks/docker_prod_web_servers.yml --ask-vault-pass
 
@@ -59,6 +59,9 @@ docker exec -it template7pg-web-1 /bin/bash
 <!-- Run a command in a running container -->
 docker exec -it template7pg-web-1 bundle exec rails db:create
 docker exec -it template7pg-web-1 bundle exec rails db:migrate
+
+<!-- Restart a running container -->
+docker restart template7pg-web-1
 
 <!-- Get UID and GID of user in the container -->
 docker run --rm nkhphuc/template7pg:latest id
