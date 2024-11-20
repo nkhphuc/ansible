@@ -51,15 +51,22 @@ ansible-vault decrypt inventory/dev/group_vars/all/vault.yml
 docker ps
 
 <!-- view container logs -->
-docker logs container_name
+docker logs template7pg-web-1
+
+<!-- Run a command in a running container -->
+docker exec -it template7pg-web-1 bundle exec rails db:migrate
 
 <!-- Get UID and GID of user in the container -->
 docker run --rm nkhphuc/template7pg:latest id
 
 <!-- Access docker image -->
-docker run -it --rm nkhphuc/template7pg:latest /bin/bash
+docker run -it --rm template7pg-web /bin/bash
 
 <!-- Remove all docker containers and networks -->
 docker stop $(docker ps -aq)
 docker rm $(docker ps -aq)
 docker network prune -f
+
+## Psql
+<!-- Connect to postgres database -->
+psql -h 54.255.195.242 -U postgres
