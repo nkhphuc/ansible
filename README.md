@@ -17,6 +17,7 @@ ansible-playbook -i inventory/prod playbooks/create_deploy_user.yml
 
 <!-- Install Postgresql, DragonflyDB, Project and Nginx using Docker -->
 ansible-playbook -i inventory/dev playbooks/docker_dev_web_servers.yml --ask-vault-pass
+ansible-playbook -i inventory/prod playbooks/docker_prod_web_servers.yml --ask-vault-pass
 
 ## Other cmds
 <!-- Connect to server as ec2-user / ubuntu -->
