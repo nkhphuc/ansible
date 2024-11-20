@@ -20,12 +20,11 @@
       set_fact:
         rails_master_key: "{{ vault_rails_master_key }}"
         github_repo_url: "{{ vault_github_repo_url }}"
+        postgres_password: "{{ vault_postgres_dev_password | default('password') }}"
   roles:
     - role: info
     - role: docker
     - role: docker_postgres
-      vars:
-        postgres_password: "{{ vault_postgres_dev_password | default('password') }}"
     - role: docker_dragonflydb
     # - role: docker_nginx
     - role: docker_caddy
