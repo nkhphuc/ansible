@@ -1,0 +1,3 @@
+---
+template7pg_data_dir: "/home/{{ ansible_user }}/template7pg_data"
+template7pg_port: "3000"
