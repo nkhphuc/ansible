@@ -3,6 +3,8 @@
 ## Check cmds
 <!-- Check dev inventory -->
 ansible-inventory --list -i inventory/dev
+<!-- Check production inventory -->
+ansible-inventory --list -i inventory/prod
 
 ## Run playbook cmds
 <!-- Test by ping and print messages -->
