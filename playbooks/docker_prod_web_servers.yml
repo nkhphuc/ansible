@@ -1,0 +1,37 @@
+---
+- name: Production deployment for web servers
+  hosts: aws_prod_web_servers
+  become: yes
+  remote_user: "{{ deploy_user }}"
+  gather_facts: yes
+  vars:
+    rails_env: "production"
+    ansible_user: "{{ deploy_user }}"
+  pre_tasks:
+    - name: Include encrypted secrets
+      include_vars:
+        file: secrets.yml
+    - name: Set variables from secrets
+      set_fact:
+        rails_master_key: "{{ vault_rails_master_key }}"
+        github_repo_url: "{{ vault_github_repo_url }}"
+  roles:
+    - role: info
+    - role: docker
+      vars:
+        docker_user: "{{ ansible_user }}"
+    - role: docker_postgres
+      vars:
+        postgres_user: "{{ vault_postgres_user }}"
+        postgres_password: "{{ vault_postgres_password }}"
+    - role: docker_dragonflydb
+    - role: docker_caddy
+      vars:
+        caddy_port: "80"
+        app_server_ip: "{{ ansible_private_ip }}"
+        domain_name: "{{ vault_domain_name }}"
+        admin_email: "{{ vault_admin_email }}"
+    - role: template7pg_compose
+      vars:
+        ansible_user_uid: "1000"
+        ansible_user_gid: "1000"
