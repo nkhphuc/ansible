@@ -27,7 +27,6 @@
     - role: docker_dragonflydb
     # - role: docker_nginx
     #   vars:
-    #     nginx_port: "80"
     #     app_server_ip: "{{ ansible_private_ip }}"
 
     # not tested yet
