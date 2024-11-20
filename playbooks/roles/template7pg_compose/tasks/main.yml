@@ -160,17 +160,15 @@
   set_fact:
     env_specific_vars:
       development:
-        DEV_DATABASE_HOST: "{{ dev_database_host | default('') }}"
-        DEV_DATABASE_USERNAME: "{{ dev_database_username | default('') }}"
-        DEV_DATABASE_PASSWORD: "{{ dev_database_password | default('') }}"
-        REDIS_URL: "{{ redis_url | default('') }}"
-        OLLAMA_CHAT_URL: "{{ ollama_chat_url | default('') }}"
+        DEV_DATABASE_HOST: "{{ dev_database_host }}"
+        REDIS_URL: "{{ redis_url }}"
+        OLLAMA_CHAT_URL: "{{ ollama_chat_url }}"
       production:
-        PRO_DATABASE_HOST: "{{ pro_database_host | default('') }}"
-        PRO_DATABASE_USERNAME: "{{ pro_database_username | default('') }}"
-        PRO_DATABASE_PASSWORD: "{{ pro_database_password | default('') }}"
-        REDIS_URL: "{{ redis_url | default('') }}"
-        OLLAMA_CHAT_URL: "{{ ollama_chat_url | default('') }}"
+        PRO_DATABASE_HOST: "{{ pro_database_host }}"
+        PRO_DATABASE_USERNAME: "{{ pro_database_username }}"
+        PRO_DATABASE_PASSWORD: "{{ pro_database_password }}"
+        REDIS_URL: "{{ redis_url }}"
+        OLLAMA_CHAT_URL: "{{ ollama_chat_url }}"
 
 - name: Combine environment variables
   set_fact:
