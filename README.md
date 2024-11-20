@@ -22,13 +22,13 @@ ansible-playbook -i inventory/prod playbooks/docker_prod_web_servers.yml --ask-v
 ## Other cmds
 <!-- Connect to server as ec2-user / ubuntu -->
 ssh -i /Users/hopee/downloads/rails-server.pem ec2-user@54.169.173.233
-ssh -i /Users/hopee/downloads/rails-server.pem ubuntu@13.250.58.55
+ssh -i /Users/hopee/downloads/rails-server.pem ubuntu@54.255.195.242
 
 <!-- Switch to the deploy_user user -->
 sudo su - deploy_user
 
 <!-- Or login as deploy_user -->
-ssh -i /Users/hopee/.ssh/hopee_mac_github_1.pub deploy_user@13.250.58.55
+ssh -i /Users/hopee/.ssh/hopee_mac_github_1.pub deploy_user@54.255.195.242
 
 ## Ansible Vault cmds
 <!-- Create an encrypted file -->
@@ -47,6 +47,12 @@ ansible-vault encrypt inventory/dev/group_vars/all/vault.yml
 ansible-vault decrypt inventory/dev/group_vars/all/vault.yml
 
 ## Docker
+<!-- Check running Docker containers -->
+docker ps
+
+<!-- view container logs -->
+docker logs container_name
+
 <!-- Get UID and GID of user in the container -->
 docker run --rm nkhphuc/template7pg:latest id
 
