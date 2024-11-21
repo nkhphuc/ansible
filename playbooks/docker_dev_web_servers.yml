@@ -29,6 +29,5 @@
     - role: docker
     - role: docker_postgres
     - role: docker_dragonflydb
-    # - role: docker_nginx
     - role: docker_caddy
     - role: template7pg_compose

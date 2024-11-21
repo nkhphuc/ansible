@@ -1,4 +1,5 @@
 ---
+# Temporarily not in use. Will require rework before future implementation.
 - name: Create Nginx configuration file
   template:
     src: "nginx.conf.{{ rails_env | truncate(3,true,'') }}.j2"
