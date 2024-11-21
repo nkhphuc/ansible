@@ -22,13 +22,13 @@ ansible-playbook -i inventory/prod playbooks/docker_prod_web_servers.yml --ask-v
 ## Connect cmds
 <!-- Connect to server as ec2-user / ubuntu -->
 ssh -i /Users/hopee/downloads/rails-server.pem ec2-user@54.169.173.233
-ssh -i /Users/hopee/downloads/rails-server.pem ubuntu@54.255.195.242
+ssh -i /Users/hopee/downloads/rails-server.pem ubuntu@54.169.220.131
 
 <!-- Switch to the deploy_user user -->
 sudo su - deploy_user
 
 <!-- Or login as deploy_user -->
-ssh -i /Users/hopee/.ssh/hopee_mac_github_1.pub deploy_user@54.255.195.242
+ssh -i /Users/hopee/.ssh/hopee_mac_github_1.pub deploy_user@54.169.220.131
 
 ## Ansible Vault cmds
 <!-- Create an encrypted file -->

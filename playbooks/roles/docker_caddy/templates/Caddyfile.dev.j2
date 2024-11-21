@@ -3,8 +3,7 @@
     admin off
 }
 
-# Use your EC2's public IP
-{{ app_public_ip }} {
+:80 {
     reverse_proxy {{ app_private_ip }}:3000 {
         header_up Host {host}
         header_up X-Real-IP {remote}
