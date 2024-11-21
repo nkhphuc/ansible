@@ -15,6 +15,8 @@
     - { name: 'user.email', value: 'nkhphuc@gmail.com' }
   become: yes
   become_user: "{{ ansible_user }}"
+  vars:
+    ansible_ssh_pipelining: true
 
 - name: Check GitHub connectivity
   ansible.builtin.uri:
@@ -42,6 +44,8 @@
     chdir: "{{ project_directory }}"
   become: yes
   become_user: "{{ ansible_user }}"
+  vars:
+    ansible_ssh_pipelining: true
   register: local_head
   changed_when: false
   when: git_repo_stat.stat.exists
@@ -68,6 +72,8 @@
     depth: 1
   become: yes
   become_user: "{{ ansible_user }}"
+  vars:
+    ansible_ssh_pipelining: true
   when: update_needed
   async: 120
   poll: 10

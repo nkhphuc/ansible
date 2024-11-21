@@ -167,4 +167,7 @@
   shell: "source /home/{{ docker_user }}/.bashrc"
   args:
     executable: /bin/bash
+  become: true
   become_user: "{{ docker_user }}"
+  vars:
+    ansible_ssh_pipelining: true
