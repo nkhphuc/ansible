@@ -1,5 +1,5 @@
 # ansible_host is default var name
-ansible_host: 54.169.220.131
-ansible_private_ip: 172.31.45.32
+ansible_host: 13.212.31.162
+ansible_private_ip: 172.31.34.139
 ansible_ssh_private_key_file: /Users/hopee/downloads/rails-server.pem
 deploy_user_key: /Users/hopee/.ssh/hopee_mac_github_1.pub

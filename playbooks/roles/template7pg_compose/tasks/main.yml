@@ -183,22 +183,3 @@
   become: yes
   environment: "{{ combined_env }}"
   when: update_needed
-
-- name: Wait for the application to be ready
-  ansible.builtin.wait_for:
-    host: localhost
-    port: "{{ app_port }}"
-    delay: 5
-    timeout: 60
-  when: update_needed
-
-- name: Check application connection
-  ansible.builtin.uri:
-    url: "http://localhost:{{ app_port }}"
-    method: GET
-  register: app_check
-  retries: 3
-  delay: 10
-  until: app_check.status == 200
-  changed_when: false
-  when: update_needed

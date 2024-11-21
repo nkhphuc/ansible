@@ -28,7 +28,7 @@ ssh -i /Users/hopee/downloads/rails-server.pem ubuntu@54.169.220.131
 sudo su - deploy_user
 
 <!-- Or login as deploy_user -->
-ssh -i /Users/hopee/.ssh/hopee_mac_github_1.pub deploy_user@54.169.220.131
+ssh -i /Users/hopee/.ssh/hopee_mac_github_1.pub deploy_user@13.212.31.162
 
 ## Ansible Vault cmds
 <!-- Create an encrypted file -->
@@ -69,10 +69,11 @@ docker run --rm nkhphuc/template7pg:latest id
 <!-- Access docker image -->
 docker run -it --rm template7pg-web /bin/bash
 
-<!-- Remove all docker containers and networks -->
+<!-- Remove all docker containers, networks and images -->
 docker stop $(docker ps -aq)
 docker rm $(docker ps -aq)
 docker network prune -f
+docker image prune -a
 
 ## Psql cmds
 <!-- Connect to postgres database -->
