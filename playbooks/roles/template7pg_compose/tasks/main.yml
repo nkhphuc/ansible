@@ -1,9 +1,16 @@
 ---
+- name: Check if git is installed
+  command: git --version
+  register: git_check
+  ignore_errors: yes
+  changed_when: false
+
 - name: Ensure git is installed
   ansible.builtin.package:
     name: git
     state: present
   become: yes
+  when: git_check.rc != 0
 
 - name: Set Git user configuration
   ansible.builtin.git_config:
