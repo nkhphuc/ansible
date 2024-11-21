@@ -35,6 +35,4 @@
     - role: docker_dragonflydb
     # - role: docker_nginx
     - role: docker_caddy
-    # Ollama require 3.5 GB of RAM.
-    # - role: docker_ollama
     - role: template7pg_compose

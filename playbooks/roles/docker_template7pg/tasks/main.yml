@@ -1,4 +1,9 @@
 ---
+# Temporarily not in use. Will require rework before future implementation.
+# Not recommended for use. Key considerations:
+#  1. May bypass docker-entrypoint when used with Ansible (requires verification).
+#  2. Relies on Docker Hub, requiring additional setup and subscription costs
+#  3. Limited flexibility for managing multiple app versions and environments due to separate image requirements
 - name: Check if template7pg directory exists
   stat:
     path: "{{ template7pg_data_dir }}"

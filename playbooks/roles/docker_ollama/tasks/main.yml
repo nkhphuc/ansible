@@ -1,4 +1,5 @@
 ---
+# Temporarily not in use, as it requires too many resources (3.5GB RAM)
 - name: Check if Ollama container is running
   docker_container_info:
     name: ollama
