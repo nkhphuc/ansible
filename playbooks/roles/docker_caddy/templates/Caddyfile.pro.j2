@@ -38,7 +38,7 @@
     }
 
     # Reverse proxy
-    reverse_proxy {{ app_server_ip }}:3000 {
+    reverse_proxy {{ app_private_ip }}:3000 {
         # Health checks
         health_uri /health
         health_interval 30s

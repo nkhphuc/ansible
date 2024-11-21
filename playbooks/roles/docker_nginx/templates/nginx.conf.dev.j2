@@ -6,7 +6,7 @@ http {
     client_max_body_size 10M;
 
     upstream app {
-        server {{ app_server_ip }}:3000;
+        server {{ app_private_ip }}:3000;
     }
 
     server {
