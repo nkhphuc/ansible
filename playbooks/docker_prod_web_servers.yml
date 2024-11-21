@@ -23,7 +23,7 @@
         github_repo_url: "{{ vault_github_repo_url }}"
         postgres_user: "{{ vault_postgres_pro_user }}"
         postgres_password: "{{ vault_postgres_pro_password }}"
-        domain_name: "{{ vault_domain_name }}"
+        domain: "{{ vault_domain }}"
         admin_email: "{{ vault_admin_email }}"
         pro_database_username: "{{ vault_postgres_pro_user }}"
         pro_database_password: "{{ vault_postgres_pro_password }}"

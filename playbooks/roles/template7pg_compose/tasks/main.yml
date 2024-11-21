@@ -162,11 +162,13 @@
       development:
         DEV_DATABASE_HOST: "{{ dev_database_host }}"
         REDIS_URL: "{{ redis_url }}"
+        DOMAIN: "{{ domain }}"
       production:
         PRO_DATABASE_HOST: "{{ pro_database_host }}"
         PRO_DATABASE_USERNAME: "{{ pro_database_username }}"
         PRO_DATABASE_PASSWORD: "{{ pro_database_password }}"
         REDIS_URL: "{{ redis_url }}"
+        DOMAIN: "{{ domain }}"
 
 - name: Combine environment variables
   set_fact:

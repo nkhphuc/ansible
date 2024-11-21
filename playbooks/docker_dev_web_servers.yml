@@ -12,6 +12,7 @@
     app_private_ip: "{{ ansible_private_ip }}"
     ansible_user_uid: "1000"
     ansible_user_gid: "1000"
+    domain: "{{ ansible_public_ip }}"
     # dev_database_host: "{{ ansible_private_ip }}"
     # redis_url: "redis://{{ ansible_private_ip }}:6379/1"
   pre_tasks:
