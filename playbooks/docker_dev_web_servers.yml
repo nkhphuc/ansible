@@ -8,7 +8,7 @@
     rails_env: "development"
     ansible_user: "{{ deploy_user }}"
     docker_user: "{{ deploy_user }}"
-    app_private_ip: "{{ ansible_private_ip }}"
+    app_ip: "{{ ansible_private_ip }}"
     ansible_user_uid: "1000"
     ansible_user_gid: "1000"
     domain: "{{ ansible_host }}"
